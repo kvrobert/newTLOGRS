@@ -19,7 +19,7 @@ project.ext {
 }
 
 
-mainClassName = "com.mycompany.tlog16rs.TLOG16RSApplication"
+mainClassName = "com.rkissvincze.tlog16rs.TLOG16RSApplication"
 
 repositories {
     mavenCentral()

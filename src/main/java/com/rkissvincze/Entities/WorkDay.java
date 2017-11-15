@@ -1,5 +1,6 @@
 package com.rkissvincze.Entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.NotSeparatedTimesException;
 import com.rkissvincze.Exceptions.NegativeMinutesOfWorkException;
@@ -19,10 +20,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WorkDay {
-    
+    @JsonProperty
     private List<Task> tasks = new ArrayList<>();
+    @JsonProperty
     private long requiredMinPerDay = (long) (7.5 * 60);
+    @JsonProperty
     private LocalDate actualDay = LocalDate.now();
+    @JsonProperty
     private long sumPerDay;
     
     
@@ -74,7 +78,7 @@ public class WorkDay {
         return getSumPerDay() - getRequiredMinPerDay();
     }
     
-    public LocalTime getLastTaskEndTime(){
+    protected LocalTime getLastTaskEndTime(){
         
         Task lastTask;
         if( tasks.size() > 0 ) {

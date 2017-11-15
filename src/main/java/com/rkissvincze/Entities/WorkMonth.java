@@ -5,6 +5,7 @@
  */
 package com.rkissvincze.Entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.NotTheSameMonthException;
@@ -21,10 +22,15 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+
 public class WorkMonth {
+    @JsonProperty
     private List<WorkDay> days = new ArrayList<>();
+    @JsonProperty
     private YearMonth date = YearMonth.now();
+    @JsonProperty 
     private long sumPerMonth;
+    @JsonProperty
     private long requiredMinPerMonth;
     
     public WorkMonth(){}
@@ -93,7 +99,7 @@ public class WorkMonth {
     }
     
     public void addWorkDay(WorkDay workDay, boolean isWeekendEnabled) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException{
-        
+         System.out.println("Adding a DAY....");
         if( !isNewDate(workDay) ) throw new NotNewDateException(" This day (" + workDay.getActualDay() +") already exist. Give an another. ");
         if( isSameMonth(workDay) ){
         

@@ -5,6 +5,7 @@
  */
 package com.rkissvincze.Entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.InvalidTaskIdException;
 import com.rkissvincze.Exceptions.NoTaskIdException;
@@ -23,10 +24,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Task {
-    
+    @JsonProperty
     private String taskID;
+    @JsonProperty
     private LocalTime startTime;
+    @JsonProperty
     private LocalTime endTime;
+    @JsonProperty
     private String comment;
     
    
@@ -155,7 +159,7 @@ public class Task {
         this.setEndTime(LocalTime.parse(endTime, DateTimeFormatter.ISO_TIME));
     }
           
-    public boolean isValidTaskId(){
+    protected boolean isValidTaskId(){
     
         return taskID.matches("\\d{4}") || taskID.matches("LT-\\d{4}");
     }

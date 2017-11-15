@@ -1,9 +1,11 @@
 package com.rkissvincze.Entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rkissvincze.Exceptions.NotNewDateException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -12,8 +14,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 public class TimeLogger {
-    
+    @JsonProperty
     private List<WorkMonth> months = new ArrayList<>();
       
     public boolean isNewMonth(WorkMonth workMonth){
@@ -22,7 +25,7 @@ public class TimeLogger {
     }
     
     public void addMonth(WorkMonth workMonth) throws NotNewDateException{
-    
+        System.out.println("Adding a MONTH....");
         if( isNewMonth(workMonth) ){
         
             months.add(workMonth);
