@@ -3,18 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.rkissvincze.tlog16rs.core;
+package com.rkissvincze.Exceptions;
 
 /**
  *
  * @author rkissvincze
  */
-public class NoTaskIdException extends Exception {
+public class InvalidTaskIdException extends Exception {
 
-    public NoTaskIdException() {
+    public InvalidTaskIdException() {
         super();
     }
-    public NoTaskIdException(String message) {
+    
+    public InvalidTaskIdException(String message) {
         super(message);
     }
 }

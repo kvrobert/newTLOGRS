@@ -3,46 +3,59 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.rkissvincze.tlog16rs.core;
+package com.rkissvincze.Entities;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.rkissvincze.Exceptions.WeekendNotEnabledException;
+import com.rkissvincze.Exceptions.EmptyTimeFieldException;
+import com.rkissvincze.Exceptions.NotTheSameMonthException;
+import com.rkissvincze.Exceptions.NotNewDateException;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
  *
  * @author rkissvincze
  */
-
-
-@Path("/workmonths")
-@NoArgsConstructor
+@Getter
+@Setter
 public class WorkMonth {
-    @Getter 
-    @Setter
-    @JsonProperty
     private List<WorkDay> days = new ArrayList<>();
-    @Getter 
-    @Setter
-    @JsonProperty
     private YearMonth date = YearMonth.now();
-    @JsonProperty
     private long sumPerMonth;
-    @JsonProperty
     private long requiredMinPerMonth;
     
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
+    public WorkMonth(){}
+    
+    private WorkMonth(int year, int month){        
+        this.date = YearMonth.of(year, month);
+    }
+    
+    public static WorkMonth fromNumbers(int year, int month){
+        return new WorkMonth( year, month );
+    }
+    
+    private WorkMonth(String year, String month){        
+        this.date = YearMonth.of( Integer.parseInt(year), Integer.parseInt(month) );       
+    }
+    
+    public static WorkMonth fromString(String year, String month){
+        return new WorkMonth( year, month );
+    }
+    
+    private WorkMonth(String yearMonth){        
+        String year = yearMonth.substring(0, 4);
+        String month = yearMonth.substring(4, 6);
+        
+        this.date = YearMonth.of( Integer.parseInt(year), Integer.parseInt(month) );
+    }
+    
+    public static WorkMonth fromString(String yearMonth ){
+        return new WorkMonth( yearMonth );
+    }
+
     public long getSumPerMonth() throws EmptyTimeFieldException {
         
         long summ = 0;
@@ -56,7 +69,7 @@ public class WorkMonth {
         sumPerMonth = summ;
         return sumPerMonth;
     }
-    
+
     public long getRequiredMinPerMonth() {
         
         if( requiredMinPerMonth != 0 ) return requiredMinPerMonth;

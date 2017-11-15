@@ -3,22 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.rkissvincze.tlog16rs.core;
+package com.rkissvincze.Exceptions;
 
 /**
  *
  * @author rkissvincze
  */
-public class NotExpectedTimeOrderException extends Exception {
+public class EmptyTimeFieldException extends Exception {
 
-    public NotExpectedTimeOrderException() {
-        
+    public EmptyTimeFieldException() {
         super();
     }
     
-    public NotExpectedTimeOrderException(String message) {
-        
+    public EmptyTimeFieldException(String message) {
         super(message);
     }
-    
 }

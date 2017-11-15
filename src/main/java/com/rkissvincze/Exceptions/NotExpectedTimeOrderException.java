@@ -3,19 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.rkissvincze.tlog16rs.core;
+package com.rkissvincze.Exceptions;
 
 /**
  *
  * @author rkissvincze
  */
-public class InvalidTaskIdException extends Exception {
+public class NotExpectedTimeOrderException extends Exception {
 
-    public InvalidTaskIdException() {
+    public NotExpectedTimeOrderException() {
+        
         super();
     }
     
-    public InvalidTaskIdException(String message) {
+    public NotExpectedTimeOrderException(String message) {
+        
         super(message);
     }
+    
 }

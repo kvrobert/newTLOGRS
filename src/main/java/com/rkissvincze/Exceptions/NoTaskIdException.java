@@ -3,19 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.rkissvincze.tlog16rs.core;
+package com.rkissvincze.Exceptions;
 
 /**
  *
  * @author rkissvincze
  */
-public class EmptyTimeFieldException extends Exception {
+public class NoTaskIdException extends Exception {
 
-    public EmptyTimeFieldException() {
+    public NoTaskIdException() {
         super();
     }
-    
-    public EmptyTimeFieldException(String message) {
+    public NoTaskIdException(String message) {
         super(message);
     }
 }

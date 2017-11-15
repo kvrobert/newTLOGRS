@@ -3,20 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.rkissvincze.tlog16rs.core;
+package com.rkissvincze.Exceptions;
 
 /**
  *
  * @author Robesz
  */
-public class FutureWorkException extends Exception {
+public class NotTheSameMonthException extends Exception {
 
-    public FutureWorkException() {
+    public NotTheSameMonthException() {
         super();
     }
-    
-    public FutureWorkException(String message) {
+    public NotTheSameMonthException(String message) {
         super(message);
     }
-    
 }

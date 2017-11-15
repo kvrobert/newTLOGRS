@@ -1,10 +1,11 @@
-package com.rkissvincze.tlog16rs.core;
+package com.rkissvincze.Entities;
 
-
+import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
