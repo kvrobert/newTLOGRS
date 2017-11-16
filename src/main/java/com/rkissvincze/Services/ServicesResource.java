@@ -47,9 +47,9 @@ public class ServicesResource {
                 LocalDate.of(year, month, day)) ).count() != 0;
     }
     
-    public static WorkDay createWorkDay( int requiredHour, int year, int month, int day ) 
+    public static WorkDay createWorkDay( int requiredMin, int year, int month, int day ) 
             throws NegativeMinutesOfWorkException, FutureWorkException{
-        return WorkDay.fromNumbers( requiredHour * 60, year, month, day);        
+        return WorkDay.fromNumbers( requiredMin, year, month, day);        
     }
     
     public static boolean isTaskExits( WorkDay workday, String taskId, String startTime){        
@@ -78,16 +78,16 @@ public class ServicesResource {
         return task;    
     }
     
-    public static Task modifyTask( ModifyTaskRB taskmodifyRB ) throws 
-            NotExpectedTimeOrderException, EmptyTimeFieldException, 
-            NoTaskIdException, InvalidTaskIdException{
-        
-        Task task = Task.fromString(taskmodifyRB.getNewTaskId(), 
-                                    taskmodifyRB.getNewComment(), 
-                                    taskmodifyRB.getNewStartTime(), 
-                                    taskmodifyRB.getNewEndTime());
-        return task;    
-    }
+//    public static Task modifyTask( ModifyTaskRB taskmodifyRB ) throws             Talán nem is kell ez
+//            NotExpectedTimeOrderException, EmptyTimeFieldException, 
+//            NoTaskIdException, InvalidTaskIdException{
+//        
+//        Task task = Task.fromString(taskmodifyRB.getNewTaskId(), 
+//                                    taskmodifyRB.getNewComment(), 
+//                                    taskmodifyRB.getNewStartTime(), 
+//                                    taskmodifyRB.getNewEndTime());
+//        return task;    
+//    }
     
     
 }

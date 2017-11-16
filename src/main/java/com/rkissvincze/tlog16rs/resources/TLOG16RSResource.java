@@ -80,7 +80,7 @@ public class TLOG16RSResource {
         WorkDay wd = null;
         try{
             wd = WorkDay.fromNumbers( 
-                workday.getRequiredHour() * 60,
+                workday.getRequiredHour(),      //MIN!!!!
                 workday.getYear(), 
                 workday.getMonth(), 
                 workday.getDay());
@@ -188,7 +188,7 @@ public class TLOG16RSResource {
         return Response.ok(wd.getTasks(), MediaType.APPLICATION_JSON).build();
     }
     
-    @PUT                                                                            /////////////////////////////
+    @PUT                                                                            
     @Path("/workmonths/workdays/tasks/finish")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -198,13 +198,18 @@ public class TLOG16RSResource {
         Task tsk = null;
         
         try {
-            wm = createNewMonthOrGetTheExisting(taskFinish.getYear(), taskFinish.getMonth());
+            wm = createNewMonthOrGetTheExisting(
+                    taskFinish.getYear(), 
+                    taskFinish.getMonth());
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
         }        
         try {
-            wd = createNewDayOrGetTheExisting( taskFinish.getYear(), taskFinish.getMonth(), taskFinish.getDay(), wm);
+            wd = createNewDayOrGetTheExisting( 
+                    taskFinish.getYear(), 
+                    taskFinish.getMonth(), 
+                    taskFinish.getDay(), wm);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
                 FutureWorkException ex) {
@@ -243,13 +248,18 @@ public class TLOG16RSResource {
         Task tsk = null;
         
         try {
-            wm = createNewMonthOrGetTheExisting(taskRB.getYear(), taskRB.getMonth());
+            wm = createNewMonthOrGetTheExisting(
+                    taskRB.getYear(), 
+                    taskRB.getMonth());
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
         }        
         try {
-            wd = createNewDayOrGetTheExisting( taskRB.getYear(), taskRB.getMonth(), taskRB.getDay(), wm);
+            wd = createNewDayOrGetTheExisting( 
+                    taskRB.getYear(), 
+                    taskRB.getMonth(), 
+                    taskRB.getDay(), wm);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
                 FutureWorkException ex) {
@@ -286,7 +296,10 @@ public class TLOG16RSResource {
      
       if( !ServicesResource.isTaskExits(timelogger, deleteTask) ) 
           return Response.status(Response.Status.SEE_OTHER).build();
-      WorkDay wd = getTheWorkDay(deleteTask.getYear(), deleteTask.getMonth(), deleteTask.getDay());
+      WorkDay wd = getTheWorkDay(
+              deleteTask.getYear(), 
+              deleteTask.getMonth(), 
+              deleteTask.getDay());
       Task tsk = getTheTask(wd, deleteTask.getTaskId(), deleteTask.getStartTime());
       wd.getTasks().remove(tsk);
       return Response.ok().build();
@@ -301,9 +314,16 @@ public class TLOG16RSResource {
             NoTaskIdException, InvalidTaskIdException, NotSeparatedTimesException, 
             EmptyTimeFieldException, NotExpectedTimeOrderException {
         Task tsk;
-        if( !ServicesResource.isTaskExits(wd, taskRB.getTaskId(), taskRB.getStartTime())){
+        if( !ServicesResource.isTaskExits(
+                wd, 
+                taskRB.getTaskId(), 
+                taskRB.getStartTime())){
             
-            tsk = ServicesResource.createTask(taskRB.getNewTaskId(), taskRB.getNewComment(), taskRB.getNewStartTime(), taskRB.getNewEndTime());
+            tsk = ServicesResource.createTask(
+                    taskRB.getNewTaskId(), 
+                    taskRB.getNewComment(), 
+                    taskRB.getNewStartTime(), 
+                    taskRB.getNewEndTime());
             wd.addTask(tsk);
         }else{
             tsk = getTheTask(wd, taskRB.getTaskId(), taskRB.getStartTime());
@@ -315,12 +335,22 @@ public class TLOG16RSResource {
             NotExpectedTimeOrderException, EmptyTimeFieldException, NoTaskIdException, 
             InvalidTaskIdException, NotSeparatedTimesException {
         Task tsk;
-        if( !ServicesResource.isTaskExits(wd, taskRB.getTaskId(), taskRB.getStartTime())){
+        if( !ServicesResource.isTaskExits(
+                wd, 
+                taskRB.getTaskId(), 
+                taskRB.getStartTime())){
             
-            tsk = ServicesResource.createTask(taskRB.getTaskId(), taskRB.getComment(), taskRB.getStartTime(), taskRB.getEndTime());
+            tsk = ServicesResource.createTask(
+                    taskRB.getTaskId(), 
+                    taskRB.getComment(), 
+                    taskRB.getStartTime(), 
+                    taskRB.getEndTime());
             wd.addTask(tsk);
         }else{
-            tsk = getTheTask(wd, taskRB.getTaskId(), taskRB.getStartTime());
+            tsk = getTheTask(
+                    wd, 
+                    taskRB.getTaskId(), 
+                    taskRB.getStartTime());
         }
         
         return tsk;
