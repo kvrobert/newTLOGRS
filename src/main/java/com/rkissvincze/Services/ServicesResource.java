@@ -5,13 +5,20 @@
  */
 package com.rkissvincze.Services;
 
-import com.rkissvincze.Beans.WorkMonthRB;
+import com.rkissvincze.Beans.DeleteTaskRB;
+import com.rkissvincze.Beans.ModifyTaskRB;
+import com.rkissvincze.Entities.Task;
 import com.rkissvincze.Entities.TimeLogger;
 import com.rkissvincze.Entities.WorkDay;
-import com.rkissvincze.Entities.WorkDayRB;
 import com.rkissvincze.Entities.WorkMonth;
+import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.FutureWorkException;
+import com.rkissvincze.Exceptions.InvalidTaskIdException;
 import com.rkissvincze.Exceptions.NegativeMinutesOfWorkException;
+import com.rkissvincze.Exceptions.NoTaskIdException;
+import com.rkissvincze.Exceptions.NotExpectedTimeOrderException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  *
@@ -19,31 +26,68 @@ import com.rkissvincze.Exceptions.NegativeMinutesOfWorkException;
  */
 public class ServicesResource {
     
-    public static boolean isMonthExits( TimeLogger timelogger, WorkMonth workMonth ){
+    public static boolean isMonthExits( TimeLogger timelogger, int year, int month){
         
-        return !timelogger.isNewMonth(workMonth);
+        return !timelogger.isNewMonth( WorkMonth.fromNumbers(year, month) );
     }
     
-    public static WorkMonth createWorkMonth(WorkMonthRB workMontRB){
-            return WorkMonth.fromNumbers(workMontRB.getYear(), workMontRB.getMonth());
+    public static WorkMonth createWorkMonth(int year, int month){
+        return WorkMonth.fromNumbers(year, month);
     }
     
-    public static boolean isNewDay(TimeLogger timeLogger, WorkDay workDay){
+    public static boolean isDayExits(TimeLogger timeLogger, int year, int month, int day){
+        
+        if( !isMonthExits(timeLogger, year, month) ) return false;
         
         WorkMonth workMonth = timeLogger.getMonths().stream().findFirst()
-                .filter(month -> month.getDate().getMonthValue() == 
-                        workDay.getActualDay().getMonthValue() ).get();
+                .filter(wm -> wm.getDate().getMonthValue() == month ).get();
         
         return workMonth.getDays().stream().filter( 
-                day -> day.getActualDay().equals(workDay.getActualDay()) )
-                .count() == 0;
+                wd -> wd.getActualDay().equals( 
+                LocalDate.of(year, month, day)) ).count() != 0;
     }
     
-    public static WorkDay createWorkDay( WorkDayRB workDayRB ) throws NegativeMinutesOfWorkException, FutureWorkException{
-        return WorkDay.fromNumbers( workDayRB.getRequiredHour() * 60,
-                                    workDayRB.getYear(), 
-                                    workDayRB.getMonth(), 
-                                    workDayRB.getDay());        
+    public static WorkDay createWorkDay( int requiredHour, int year, int month, int day ) 
+            throws NegativeMinutesOfWorkException, FutureWorkException{
+        return WorkDay.fromNumbers( requiredHour * 60, year, month, day);        
     }
+    
+    public static boolean isTaskExits( WorkDay workday, String taskId, String startTime){        
+        return workday.getTasks().stream().filter( task -> ( 
+                task.getTaskID().equals(taskId) && 
+                task.getStartTime().equals( LocalTime.parse(
+                startTime ))) ).count() != 0;
+    }
+    
+    public static boolean isTaskExits(TimeLogger timelogger, DeleteTaskRB deleteTask){
+        WorkMonth wm = timelogger.getMonths().stream().findFirst()
+                        .filter( wmonth -> wmonth.getDate()
+                        .getMonthValue() == deleteTask.getMonth() ).get();
+        
+        WorkDay wd = wm.getDays().stream().findFirst()
+                .filter( wday -> wday.getActualDay().getDayOfMonth() 
+                == deleteTask.getDay() ).get();
+        
+        return isTaskExits(wd, deleteTask.getTaskId(), deleteTask.getStartTime());
+    }
+    
+    public static Task createTask( String taskId, String comment, String startTime, String endTime ) 
+            throws NotExpectedTimeOrderException, EmptyTimeFieldException,
+                    NoTaskIdException, InvalidTaskIdException{
+        Task task = Task.fromString(taskId, comment, startTime, endTime);
+        return task;    
+    }
+    
+    public static Task modifyTask( ModifyTaskRB taskmodifyRB ) throws 
+            NotExpectedTimeOrderException, EmptyTimeFieldException, 
+            NoTaskIdException, InvalidTaskIdException{
+        
+        Task task = Task.fromString(taskmodifyRB.getNewTaskId(), 
+                                    taskmodifyRB.getNewComment(), 
+                                    taskmodifyRB.getNewStartTime(), 
+                                    taskmodifyRB.getNewEndTime());
+        return task;    
+    }
+    
     
 }
