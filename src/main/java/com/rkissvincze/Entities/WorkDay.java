@@ -1,6 +1,8 @@
 package com.rkissvincze.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.NotSeparatedTimesException;
 import com.rkissvincze.Exceptions.NegativeMinutesOfWorkException;
@@ -19,14 +21,15 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@JsonRootName("WorkDays")
 public class WorkDay {
-    @JsonProperty
+    @JsonIgnore
     private List<Task> tasks = new ArrayList<>();
-    @JsonProperty
+    
     private long requiredMinPerDay = (long) (7.5 * 60);
-    @JsonProperty
+    @JsonProperty("WorkDay")
     private LocalDate actualDay = LocalDate.now();
-    @JsonProperty
+    
     private long sumPerDay;
     
     

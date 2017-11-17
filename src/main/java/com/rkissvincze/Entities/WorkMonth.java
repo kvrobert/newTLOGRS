@@ -5,7 +5,9 @@
  */
 package com.rkissvincze.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.NotTheSameMonthException;
@@ -23,14 +25,12 @@ import lombok.Setter;
 @Getter
 @Setter
 
-public class WorkMonth {
-    @JsonProperty
+public class WorkMonth {    
+    @JsonIgnore
     private List<WorkDay> days = new ArrayList<>();
-    @JsonProperty
+    @JsonProperty("WorkMonth")
     private YearMonth date = YearMonth.now();
-    @JsonProperty 
     private long sumPerMonth;
-    @JsonProperty
     private long requiredMinPerMonth;
     
     public WorkMonth(){}
@@ -62,7 +62,7 @@ public class WorkMonth {
         return new WorkMonth( yearMonth );
     }
 
-    public long getSumPerMonth() throws EmptyTimeFieldException {
+    protected long getSumPerMonth() throws EmptyTimeFieldException {
         
         long summ = 0;
         if ( sumPerMonth != 0 ) return sumPerMonth;
@@ -76,14 +76,14 @@ public class WorkMonth {
         return sumPerMonth;
     }
 
-    public long getRequiredMinPerMonth() {
+    protected long getRequiredMinPerMonth() {
         
         if( requiredMinPerMonth != 0 ) return requiredMinPerMonth;
         requiredMinPerMonth = days.stream().mapToLong(WorkDay::getRequiredMinPerDay).sum();
         return requiredMinPerMonth;
     }
     
-    public long getExtraMinPerMonth() throws EmptyTimeFieldException{
+    protected long getExtraMinPerMonth() throws EmptyTimeFieldException{
         
         return getSumPerMonth() - getRequiredMinPerMonth();
     }

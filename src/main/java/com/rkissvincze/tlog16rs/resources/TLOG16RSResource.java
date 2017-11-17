@@ -32,6 +32,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import jdk.net.SocketFlow;
 import lombok.extern.slf4j.Slf4j;
 
 @Path("/timelogger")
@@ -50,23 +52,23 @@ public class TLOG16RSResource {
     
     @GET
     @Path("/workmonths")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response displaysWorkMoths(){        
         System.out.println(timelogger.getMonths().size());    
         return Response.ok( timelogger.getMonths(), MediaType.APPLICATION_JSON).build();        
     }
    
     @POST
-    @Path("/workmonths")
+    @Path("/workmonths")                                // HIBAKEZELÉS??????
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addWorkMonth(WorkMonthRB month){
         WorkMonth workMonth = WorkMonth.fromNumbers(month.getYear(), month.getMonth());
-        if( timelogger == null ) return Response.status(Response.Status.CONFLICT).build();
         try{
             timelogger.addMonth(workMonth);
             return Response.ok(month).build();
         }catch(NotNewDateException e){
+            Response.serverError();
             System.err.println(e.getMessage());
             log.error(e.getMessage());
         }
@@ -293,7 +295,6 @@ public class TLOG16RSResource {
     @PUT                                                                         
     @Path("/workmonths/workdays/tasks/delete")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteTask( DeleteTaskRB deleteTask ){
      
       if( !ServicesResource.isTaskExits(timelogger, deleteTask) ) 
@@ -306,6 +307,14 @@ public class TLOG16RSResource {
       wd.getTasks().remove(tsk);
       return Response.ok().build();
     }
+    
+    @PUT                                                                         
+    @Path("/workmonths/deleteall")
+    public Response deleteAllTheWorkmonts(){
+        timelogger.getMonths().clear();
+        return Response.status(Response.Status.NO_CONTENT).build();
+    }
+    
     
     /*
      *  ::: SERVICES ::

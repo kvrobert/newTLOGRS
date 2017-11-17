@@ -2,6 +2,8 @@ package com.rkissvincze.tlog16rs;
 
 import com.rkissvincze.Entities.TimeLogger;
 import com.rkissvincze.tlog16rs.resources.TLOG16RSResource;
+import com.rkissvincze.tlog16rs.resources.TLOG16RSResource_greeting;
+import com.rkissvincze.tlog16rs.resources.hello;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -28,7 +30,8 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
         environment.jersey().register(new TLOG16RSResource( new TimeLogger() ));
-        //environment.jersey().register(new hello());
+        environment.jersey().register(new hello());
+        environment.jersey().register(new TLOG16RSResource_greeting());
     }
 
 }
