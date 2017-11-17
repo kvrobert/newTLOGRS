@@ -1,7 +1,6 @@
 package com.rkissvincze.tlog16rs.resources;
 
 import com.rkissvincze.Beans.DeleteTaskRB;
-import com.rkissvincze.Beans.FinishingTaskRB;
 import com.rkissvincze.Beans.ModifyTaskRB;
 import com.rkissvincze.Beans.TaskRB;
 import com.rkissvincze.Beans.WorkMonthRB;
@@ -44,14 +43,17 @@ public class TLOG16RSResource {
 //    WorkDay workDay;
 //    Task task;
     
-    public TLOG16RSResource(){}
+    public TLOG16RSResource( TimeLogger timeLogger ){
+        this.timelogger = timeLogger;
+    }
     
     
     @GET
     @Path("/workmonths")
     @Produces(MediaType.APPLICATION_JSON)
     public Response displaysWorkMoths(){        
-            return Response.ok( timelogger.getMonths(), MediaType.APPLICATION_JSON).build();        
+        System.out.println(timelogger.getMonths().size());    
+        return Response.ok( timelogger.getMonths(), MediaType.APPLICATION_JSON).build();        
     }
    
     @POST

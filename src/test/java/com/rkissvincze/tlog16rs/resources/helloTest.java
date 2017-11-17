@@ -1,6 +1,7 @@
 package com.rkissvincze.tlog16rs.resources;
 
 import com.google.common.net.MediaType;
+import com.rkissvincze.Entities.TimeLogger;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import javassist.NotFoundException;
 import javax.ws.rs.client.Client;
@@ -22,7 +23,7 @@ public class helloTest {
     @Rule
     public ResourceTestRule resultPrec = ResourceTestRule
             .builder()
-            .addResource(new TLOG16RSResource()).build();
+            .addResource(new TLOG16RSResource( new TimeLogger() )).build();
    
    
 
