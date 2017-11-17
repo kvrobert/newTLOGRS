@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -308,8 +309,8 @@ public class TLOG16RSResource {
       return Response.ok().build();
     }
     
-    @PUT                                                                         
-    @Path("/workmonths/deleteall")
+    @DELETE                                                                        
+    @Path("/workmonths/")
     public Response deleteAllTheWorkmonts(){
         timelogger.getMonths().clear();
         return Response.status(Response.Status.NO_CONTENT).build();
