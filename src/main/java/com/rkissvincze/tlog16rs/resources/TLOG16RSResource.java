@@ -8,7 +8,7 @@ import com.rkissvincze.Beans.WorkMonthRB;
 import com.rkissvincze.Entities.Task;
 import com.rkissvincze.Entities.TimeLogger;
 import com.rkissvincze.Entities.WorkDay;
-import com.rkissvincze.Entities.WorkDayRB;
+import com.rkissvincze.Beans.WorkDayRB;
 import com.rkissvincze.Entities.WorkMonth;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.FutureWorkException;
@@ -24,6 +24,8 @@ import com.rkissvincze.Services.ServicesResource;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -54,7 +56,6 @@ public class TLOG16RSResource {
     @Path("/workmonths")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response displaysWorkMoths(){        
-        System.out.println(timelogger.getMonths().size());    
         return Response.ok( timelogger.getMonths(), MediaType.APPLICATION_JSON).build();        
     }
    
@@ -83,20 +84,21 @@ public class TLOG16RSResource {
         WorkMonth wm = null;
         WorkDay wd = null;
         try{
-            wd = WorkDay.fromNumbers( 
-                workday.getRequiredHour(),      //MIN!!!!
-                workday.getYear(), 
-                workday.getMonth(), 
-                workday.getDay());
+//            wd = WorkDay.fromNumbers( 
+//                workday.getRequiredHour(),      //MIN!!!!
+//                workday.getYear(), 
+//                workday.getMonth(), 
+//                workday.getDay());
         wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());
-        wm.addWorkDay(wd);
+            System.out.println("A WÖRKÓNT" + wm);
+        wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), wm);
+            System.out.println("A WORKDÉJ: " + wd);       
             return Response.ok( wd, MediaType.APPLICATION_JSON).build();
-        }catch(FutureWorkException | NegativeMinutesOfWorkException | 
-                WeekendNotEnabledException | NotNewDateException | 
-                NotTheSameMonthException e){
-            System.out.println(e.getMessage());
+        }catch( WeekendNotEnabledException | NotNewDateException | 
+                NotTheSameMonthException |NegativeMinutesOfWorkException | FutureWorkException e){
+            System.err.println(e.getMessage());
             log.error(e.getMessage());
-        }
+        } 
         return Response.status(Response.Status.SEE_OTHER).build();
     }
     
@@ -143,7 +145,7 @@ public class TLOG16RSResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response displaysDays( @PathParam("year") String year, 
                                   @PathParam( "month" ) String month  ){
-        if( !year.matches("\\d{4}")  || !month.matches("\\{2}") ) 
+        if( !year.matches("\\d{4}")  || !month.matches("\\d{2}") ) 
             return Response.status(Response.Status.CONFLICT).build();
 
         WorkMonth wm = null; 
@@ -166,7 +168,8 @@ public class TLOG16RSResource {
     public Response displaysTasks( @PathParam("year") String year,
                                    @PathParam( "month" ) String month, 
                                    @PathParam( "day" ) String day  ){
-        if( !year.matches("\\d{4}")  || !month.matches("\\{2}") || !day.matches("\\{2}")) 
+        System.out.println("ENTERING..Y/M/D.." + year + month+day);
+        if( !year.matches("\\d{4}")  || !month.matches("\\d{2}") || !day.matches("\\d{2}")) 
                 return Response.status(Response.Status.CONFLICT).build();
         WorkMonth wm = null;       
         WorkDay wd = null;
@@ -174,6 +177,7 @@ public class TLOG16RSResource {
             wm = createNewMonthOrGetTheExisting( 
                     Integer.parseInt(year), 
                     Integer.parseInt(month) );
+            System.out.println("Y/M/D...WM = :" + wm);
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
@@ -183,6 +187,7 @@ public class TLOG16RSResource {
                     Integer.parseInt(year), 
                     Integer.parseInt(month), 
                     Integer.parseInt(day), wm);
+            System.out.println("Y/M/D...WD = :" + wd);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
                 FutureWorkException ex) {
@@ -386,8 +391,10 @@ public class TLOG16RSResource {
             wd = ServicesResource.createWorkDay(450, year, month, day);
             wm.addWorkDay(wd);
         }else{
+            System.out.println("THE DAY EXITS.....");
             wd = getTheWorkDay( year, month, day );
-        }
+            System.out.println("I GIVE THE EXITS WORKDÉJ:..: " + wd);
+        } 
         return wd;
     }
 
@@ -410,7 +417,8 @@ public class TLOG16RSResource {
     
     protected WorkDay getTheWorkDay( int year, int month, int day ){
         WorkMonth wm = getTheMonth(year, month);
-        return wm.getDays().stream().findFirst().filter(wd -> 
+        System.out.println("GetTHEWOKMÓNTH aus GETTHEWORKDÉJ..." + wm);
+        return wm.getDays().stream().findAny().filter(wd ->                     // nem jó a keresés-- sehol sem ez a STREAMes..FOR 
         wd.getActualDay().equals(LocalDate.of(year, month, day))).get();
     }
 

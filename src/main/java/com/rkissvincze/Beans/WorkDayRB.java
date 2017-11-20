@@ -1,4 +1,4 @@
-package com.rkissvincze.Entities;
+package com.rkissvincze.Beans;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
