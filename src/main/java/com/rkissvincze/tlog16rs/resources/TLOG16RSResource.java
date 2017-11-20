@@ -1,5 +1,6 @@
 package com.rkissvincze.tlog16rs.resources;
 
+import com.rkissvincze.Entities.TestEntity;
 import com.rkissvincze.Beans.DeleteTaskRB;
 import com.rkissvincze.Beans.ModifyTaskRB;
 import com.rkissvincze.Beans.TaskRB;
@@ -33,8 +34,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import jdk.net.SocketFlow;
 import lombok.extern.slf4j.Slf4j;
 
 @Path("/timelogger")
@@ -314,6 +313,17 @@ public class TLOG16RSResource {
     public Response deleteAllTheWorkmonts(){
         timelogger.getMonths().clear();
         return Response.status(Response.Status.NO_CONTENT).build();
+    }
+    
+    @POST
+    @Path("/save/test")
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.TEXT_PLAIN)
+    public Response createEntity( String entityText ){
+    
+        TestEntity entityTest = new TestEntity();
+        entityTest.setText(entityText);
+        return Response.ok(entityText).build();
     }
     
     

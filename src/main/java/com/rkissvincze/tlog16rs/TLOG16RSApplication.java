@@ -1,6 +1,7 @@
 package com.rkissvincze.tlog16rs;
 
 import com.rkissvincze.Entities.TimeLogger;
+import com.rkissvincze.tlog16rs.resources.CreateDatabase;
 import com.rkissvincze.tlog16rs.resources.TLOG16RSResource;
 import com.rkissvincze.tlog16rs.resources.TLOG16RSResource_greeting;
 import com.rkissvincze.tlog16rs.resources.hello;
@@ -29,9 +30,11 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     @Override
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
+    //    CreateDatabase createDatabase = new CreateDatabase();
         environment.jersey().register(new TLOG16RSResource( new TimeLogger() ));
         environment.jersey().register(new hello());
-        environment.jersey().register(new TLOG16RSResource_greeting());
+        environment.jersey().register(new TLOG16RSResource_greeting());        
+        
     }
 
 }

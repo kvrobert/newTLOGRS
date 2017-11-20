@@ -15,7 +15,7 @@ scmVersion {
 project.version = scmVersion.version
 
 project.ext {
-    dropwizardVersion = '0.8.2'   
+    dropwizardVersion = '1.0.0'   
 }
 
 
@@ -27,13 +27,35 @@ repositories {
 
 dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion	
-    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.18'
+    compile('org.projectlombok:lombok:1.16.10') 
+    
+    //compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.8.0-beta0'
+
+    
+    compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.2.0'
+    compile('org.avaje.ebeanorm:avaje-ebeanorm:8.1.1')   {exclude group: 'org.slf4j'}
+    compile('org.avaje.ebeanorm:avaje-ebeanorm-agent:8.1.1') {exclude group: 'org.slf4j'}
    // testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'io.dropwizard', name: 'dropwizard-testing', version: '1.2.0'    	
-    //testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    testCompile group: 'io.dropwizard', name: 'dropwizard-testing', version: dropwizardVersion 	
+    
+    
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-nop
+    //compile group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta0'  
+    
 }
 
 run {
  args 'server'
 }
 
+//classes.doLast {
+//    javaexec { // Ebean enchancement
+//        classpath = sourceSets.main.compileClasspath
+//        main = 'com.avaje.ebean.enhance.ant.MainTransform'
+//        args = [
+//			compileJava.destinationDir,
+//                'com.rkissvincze.tlog16rs.entities',
+//                'debug=1'
+//        ]
+//    }
+//}
