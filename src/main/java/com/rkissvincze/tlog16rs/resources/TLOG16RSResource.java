@@ -323,7 +323,7 @@ public class TLOG16RSResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
     public Response createEntity( String entityText ){
-    
+        System.out.println("SAVE...." + entityText);
         TestEntity entityTest = new TestEntity();
         entityTest.setText(entityText);
         Ebean.save(entityTest);
