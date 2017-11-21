@@ -9,6 +9,7 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.ServerConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.rkissvincze.Entities.TestEntity;
 import org.avaje.datasource.DataSourceConfig;
 
 /**
@@ -25,9 +26,12 @@ public class CreateDatabase {
     
         dataSourceConfig = new DataSourceConfig();
         dataSourceConfig.setDriver("org.mariadb.jdbc.Driver");
-        dataSourceConfig.setUrl("jdbc:mariadb://127.0.0.1:9001/timelogger\"");
-        dataSourceConfig.setUsername("timelogger");
-        dataSourceConfig.setPassword("633Ym2aZ5b9Wtzh4EJc4pANx");
+        dataSourceConfig.setUrl("jdbc:mariadb://127.0.0.1:3306/timelogger");
+        dataSourceConfig.setUsername("root");
+        dataSourceConfig.setPassword("katika");
+        
+//        dataSourceConfig.setUsername("timelogger");
+//        dataSourceConfig.setPassword("633Ym2aZ5b9Wtzh4EJc4pANx");
         
         
         serverConfig = new ServerConfig();
@@ -36,9 +40,15 @@ public class CreateDatabase {
         serverConfig.setDdlRun(true);
         serverConfig.setRegister(true);
         serverConfig.setDataSourceConfig(dataSourceConfig);
-        serverConfig.addClass(AnnotatedClass.class);
+        serverConfig.addClass(TestEntity.class);
         serverConfig.setDefaultServer(true);
        
         ebeanServer = EbeanServerFactory.create(serverConfig);
     }
+
+    public EbeanServer getEbeanServer() {
+        return ebeanServer;
+    }
+    
+    
 }

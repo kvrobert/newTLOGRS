@@ -48,14 +48,14 @@ run {
  args 'server'
 }
 
-//classes.doLast {
-//    javaexec { // Ebean enchancement
-//        classpath = sourceSets.main.compileClasspath
-//        main = 'com.avaje.ebean.enhance.ant.MainTransform'
-//        args = [
-//			compileJava.destinationDir,
-//                'com.rkissvincze.tlog16rs.entities',
-//                'debug=1'
-//        ]
-//    }
-//}
+classes.doLast {
+    javaexec { // Ebean enchancement
+        classpath = sourceSets.main.compileClasspath
+        main = 'com.avaje.ebean.enhance.ant.MainTransform'
+        args = [
+			compileJava.destinationDir,
+                'com.rkissvincze.Entities',
+                'debug=1'
+        ]
+    }
+}

@@ -1,5 +1,7 @@
 package com.rkissvincze.tlog16rs.resources;
 
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.EbeanServer;
 import com.rkissvincze.Entities.TestEntity;
 import com.rkissvincze.Beans.DeleteTaskRB;
 import com.rkissvincze.Beans.ModifyTaskRB;
@@ -24,8 +26,6 @@ import com.rkissvincze.Services.ServicesResource;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -43,9 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TLOG16RSResource {
     
     TimeLogger timelogger;
-//    WorkMonth workMonth;
-//    WorkDay workDay;
-//    Task task;
+    private EbeanServer ebeanServer;
     
     public TLOG16RSResource( TimeLogger timeLogger ){
         this.timelogger = timeLogger;
@@ -328,6 +326,8 @@ public class TLOG16RSResource {
     
         TestEntity entityTest = new TestEntity();
         entityTest.setText(entityText);
+        Ebean.save(entityTest);
+//        entityText = entityText + "helloka";
         return Response.ok(entityText).build();
     }
     
