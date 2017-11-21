@@ -30,7 +30,7 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     @Override
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
-        CreateDatabase createDatabase = new CreateDatabase();
+        CreateDatabase createDatabase = new CreateDatabase( new TLOG16RSConfiguration() );
         environment.jersey().register(new TLOG16RSResource( new TimeLogger()));
         environment.jersey().register(new hello());
         environment.jersey().register(new TLOG16RSResource_greeting());        

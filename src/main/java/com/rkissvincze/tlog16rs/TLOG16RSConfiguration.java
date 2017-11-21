@@ -9,19 +9,15 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Setter
 public class TLOG16RSConfiguration extends Configuration {
     
-//        @NotEmpty
-//	protected String dBDriver;
-//
-//	@NotEmpty
-//	protected String dBUrl;
-//
-//	@NotEmpty
-//	protected String dBUsername;
-//
-//	@NotEmpty
-//	protected String dBPassword;
-//
-//	@NotEmpty
-//	protected String dBName;
+        @NotEmpty
+	protected String dbDriver;
+	@NotEmpty
+	protected String dbUrl;
+	@NotEmpty
+	protected String dbUsername;
+	@NotEmpty
+	protected String dbPassword;
+	@NotEmpty
+	protected String dbName;
     
 }

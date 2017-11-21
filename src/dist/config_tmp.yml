@@ -1,0 +1,6 @@
+
+dBDriver :org.mariadb.jdbc.Driver
+dBUrl: jdbc:mariadb://127.0.0.1:3306/timelogger
+dBUsername: root
+dBPassword: katika
+dBName: test_entity
