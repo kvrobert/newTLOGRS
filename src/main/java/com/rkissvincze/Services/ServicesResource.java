@@ -47,8 +47,9 @@ public class ServicesResource {
                 LocalDate.of(year, month, day)) ).count() != 0;
     }
     
-    public static WorkDay createWorkDay( int requiredMin, int year, int month, int day ) 
+    public static WorkDay createWorkDay( int requiredMin, int year, int month, int day )            
             throws NegativeMinutesOfWorkException, FutureWorkException{
+        System.out.println("CREATE WORKDAY....in Service");
         return WorkDay.fromNumbers( requiredMin, year, month, day);        
     }
     

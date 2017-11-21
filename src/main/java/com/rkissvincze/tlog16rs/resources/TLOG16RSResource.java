@@ -26,6 +26,8 @@ import com.rkissvincze.Services.ServicesResource;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -82,11 +84,6 @@ public class TLOG16RSResource {
         WorkMonth wm = null;
         WorkDay wd = null;
         try{
-//            wd = WorkDay.fromNumbers( 
-//                workday.getRequiredHour(),      //MIN!!!!
-//                workday.getYear(), 
-//                workday.getMonth(), 
-//                workday.getDay());
         wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());
             System.out.println("A WÖRKÓNT" + wm);
         wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), wm);
@@ -101,14 +98,13 @@ public class TLOG16RSResource {
     }
     
     @POST
-    @Path("/workmonths/workdays/tasks/start")       
+    @Path("/workmonths/workdays/tasks/start")       /// innnen.....
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addTask( TaskRB task ){
          WorkMonth wm = null;       
         WorkDay wd = null;
-        Task tsk = null;
-        
+        Task tsk = null;        
         try {
             wm = createNewMonthOrGetTheExisting(
                     task.getYear(), task.getMonth());
@@ -246,7 +242,7 @@ public class TLOG16RSResource {
     }
     
     @PUT                                                                         
-    @Path("/workmonths/workdays/tasks/modify")
+    @Path("/workmonths/workdays/tasks/modify")          /// EZT KELL MÉG
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyTask(ModifyTaskRB taskRB) {
@@ -258,6 +254,7 @@ public class TLOG16RSResource {
             wm = createNewMonthOrGetTheExisting(
                     taskRB.getYear(), 
                     taskRB.getMonth());
+            System.out.println("GetTheMóntInTaskModiy.." + wm);
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
@@ -267,6 +264,7 @@ public class TLOG16RSResource {
                     taskRB.getYear(), 
                     taskRB.getMonth(), 
                     taskRB.getDay(), wm);
+            System.out.println("GetTheDÉJInTaskModiy.." + wd);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
                 FutureWorkException ex) {
@@ -275,6 +273,7 @@ public class TLOG16RSResource {
         }        
         try {
             tsk = createNewTaskOrGetTheExisting(wd, taskRB);
+             System.out.println("GetTheTASKinTaskModiy.." + tsk);
         }catch ( NoTaskIdException | InvalidTaskIdException | 
                 NotSeparatedTimesException | EmptyTimeFieldException | 
                 NotExpectedTimeOrderException ex) {
@@ -299,14 +298,18 @@ public class TLOG16RSResource {
     @Path("/workmonths/workdays/tasks/delete")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteTask( DeleteTaskRB deleteTask ){
-     
-      if( !ServicesResource.isTaskExits(timelogger, deleteTask) ) 
+      
+      if( !ServicesResource.isTaskExits(timelogger, deleteTask) ){ 
+          System.out.println("Delete TASK....task not exist.." + deleteTask);
           return Response.status(Response.Status.SEE_OTHER).build();
+          }
       WorkDay wd = getTheWorkDay(
               deleteTask.getYear(), 
               deleteTask.getMonth(), 
               deleteTask.getDay());
-      Task tsk = getTheTask(wd, deleteTask.getTaskId(), deleteTask.getStartTime());
+      System.out.println("Delete TASK....task exist..Workday" + wd);
+      Task tsk = getTheTask(wd, deleteTask.getTaskId(), deleteTask.getStartTime()); // OKÉÉ
+      System.out.println("Delete TASK....task to delete.." + tsk);
       wd.getTasks().remove(tsk);
       return Response.ok().build();
     }
@@ -378,8 +381,7 @@ public class TLOG16RSResource {
                     wd, 
                     taskRB.getTaskId(), 
                     taskRB.getStartTime());
-        }
-        
+        }        
         return tsk;
     }
 
@@ -388,6 +390,7 @@ public class TLOG16RSResource {
             NotTheSameMonthException, NotNewDateException, FutureWorkException {
         WorkDay wd;
         if( !ServicesResource.isDayExits(timelogger, year, month, day)){
+            System.out.println("THE DAY NOT EXITS.....I CREATE IT");
             wd = ServicesResource.createWorkDay(450, year, month, day);
             wm.addWorkDay(wd);
         }else{
@@ -410,22 +413,30 @@ public class TLOG16RSResource {
     }
 
     protected WorkMonth getTheMonth(int year, int month) {
-        return timelogger.getMonths().stream().findFirst()
-                .filter(wm -> wm.getDate().equals(
-                YearMonth.of(year, month))).get();
+        int firstElement = 0;
+        List<WorkMonth> monthSelected =  timelogger.getMonths().stream()
+                .filter(wm -> wm.getDate().equals(YearMonth.of(year, month)))
+                .collect(Collectors.toList());
+        return monthSelected.get(firstElement);
     }
     
     protected WorkDay getTheWorkDay( int year, int month, int day ){
         WorkMonth wm = getTheMonth(year, month);
+        int firstElement = 0;
         System.out.println("GetTHEWOKMÓNTH aus GETTHEWORKDÉJ..." + wm);
-        return wm.getDays().stream().findAny().filter(wd ->                     // nem jó a keresés-- sehol sem ez a STREAMes..FOR 
-        wd.getActualDay().equals(LocalDate.of(year, month, day))).get();
-    }
+        List<WorkDay> daySelected = wm.getDays().stream().filter( 
+                wDay -> wDay.getActualDay().equals( LocalDate.of(year, month, day) ))
+                .collect(Collectors.toList());
+        return daySelected.get(firstElement);
+        }
+    
 
     protected Task getTheTask(WorkDay workDay, String taskId, String startTime) {
-        return workDay.getTasks().stream().findFirst().filter( tsk -> 
+        int firstElement = 0;
+        List<Task> taskSelected = workDay.getTasks().stream().filter( tsk -> 
                 tsk.getTaskID().equals(taskId) && 
-                tsk.getStartTime().equals( LocalTime.parse(startTime) ) ).get();
+                tsk.getStartTime().equals( LocalTime.parse(startTime) ) ).collect(Collectors.toList());
+        return taskSelected.get(firstElement);
     }
     
 }
