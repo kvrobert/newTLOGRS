@@ -46,7 +46,7 @@ dependencies {
 }
 
 run {
- args 'server', 'src/dist/configOK.yml'
+ args 'server', 'src/dist/config.yml'
 }
 
 classes.doLast {

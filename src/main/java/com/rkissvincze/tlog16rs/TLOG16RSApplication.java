@@ -24,13 +24,13 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
 
     @Override
     public void initialize(final Bootstrap<TLOG16RSConfiguration> bootstrap) {
-        // TODO: application initialization
+                
     }
 
     @Override
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
-        CreateDatabase createDatabase = new CreateDatabase( new TLOG16RSConfiguration() );
+        CreateDatabase createDatabase = new CreateDatabase( configuration  );
         environment.jersey().register(new TLOG16RSResource( new TimeLogger()));
         environment.jersey().register(new hello());
         environment.jersey().register(new TLOG16RSResource_greeting());        

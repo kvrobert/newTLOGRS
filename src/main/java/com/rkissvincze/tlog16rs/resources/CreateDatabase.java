@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.rkissvincze.tlog16rs.resources;
 
 import com.avaje.ebean.EbeanServer;
@@ -32,33 +27,11 @@ public class CreateDatabase {
     private DataSourceConfig dataSourceConfig;
     private ServerConfig serverConfig;
     
-    public CreateDatabase( TLOG16RSConfiguration config ){
+    public CreateDatabase( TLOG16RSConfiguration config ){        
         
         updateSchema( config );
-    //    initDataSourceConfig(config);
-    //    initServerConfig(config);
-        
-        
-//        dataSourceConfig = new DataSourceConfig();
-//        dataSourceConfig.setDriver("org.mariadb.jdbc.Driver");
-//        dataSourceConfig.setUrl("jdbc:mariadb://127.0.0.1:3306/timelogger");
-//        dataSourceConfig.setUsername("root");
-//        dataSourceConfig.setPassword("katika");
-        
-//        dataSourceConfig.setUsername("timelogger");
-//        dataSourceConfig.setPassword("633Ym2aZ5b9Wtzh4EJc4pANx");
-        
-        
-//        serverConfig = new ServerConfig();
-//        serverConfig.setName("timelogger");
-//        serverConfig.setDdlGenerate(false);      // the database will be generate, if it TRUE
-//        serverConfig.setDdlRun(false);           // the database will be generate, if it TRUE
-//        serverConfig.setRegister(true);
-//        serverConfig.setDataSourceConfig(dataSourceConfig);
-//        serverConfig.addClass(TestEntity.class);
-//        serverConfig.setDefaultServer(true);
-//       
-//        ebeanServer = EbeanServerFactory.create(serverConfig);
+        initDataSourceConfig(config); 
+        initServerConfig(config);
     }
 
     public EbeanServer getEbeanServer() {
@@ -72,6 +45,7 @@ public class CreateDatabase {
         dataSourceConfig.setUsername(config.getDbUsername());
         dataSourceConfig.setPassword(config.getDbPassword());
     }
+    
     private void initServerConfig( TLOG16RSConfiguration config ){
         serverConfig = new ServerConfig();
         serverConfig.setName("timelogger");
@@ -86,15 +60,13 @@ public class CreateDatabase {
     }
     
     private void updateSchema( TLOG16RSConfiguration config ){
-        try {
-                       
-            //Connection connection = DriverManager.getConnection(config.getDbUrl(), config.getDbUsername(), config.getDbPassword());
-            Connection connection = DriverManager.getConnection( "jdbc:mariadb://localhost:3306/timelogger?user=root&password=katika" );
+        try {                                   
+            Connection connection = DriverManager.getConnection( 
+                "jdbc:mariadb://localhost:3306/timelogger?user=root&password=katika" );
             Liquibase liquBase = new Liquibase("migrations.xml", 
                                                 new ClassLoaderResourceAccessor(), 
                                                 new JdbcConnection(connection));
-            liquBase.update(new Contexts());
-        
+            liquBase.update(new Contexts());        
         } catch (SQLException | LiquibaseException ex) {
             Logger.getLogger(CreateDatabase.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Liqubase ERROR..." + ex.getMessage());
