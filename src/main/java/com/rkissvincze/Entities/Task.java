@@ -13,6 +13,9 @@ import com.rkissvincze.Exceptions.NotExpectedTimeOrderException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,9 +24,15 @@ import lombok.Setter;
  *
  * @author rkissvincze
  */
+@Entity
 @Getter
 @Setter
 public class Task {
+    
+    @Id
+    @GeneratedValue
+    private int id;
+    
     @JsonProperty
     private String taskID;
     @JsonProperty

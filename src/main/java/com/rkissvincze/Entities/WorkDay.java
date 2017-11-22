@@ -12,6 +12,12 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,11 +25,18 @@ import lombok.Setter;
  *
  * @author rkissvincze
  */
+@Entity
 @Getter
 @Setter
 @JsonRootName("WorkDays")
 public class WorkDay {
+    
+    @Id
+    @GeneratedValue
+    private int id;
+    
     @JsonIgnore
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Task> tasks = new ArrayList<>();
     
     private long requiredMinPerDay = (long) (7.5 * 60);
@@ -31,6 +44,8 @@ public class WorkDay {
     private LocalDate actualDay = LocalDate.now();
     
     private long sumPerDay;
+    
+    private long extraMinPerDay;
     
     
     public WorkDay(){}
@@ -78,7 +93,9 @@ public class WorkDay {
        
     public long getExtraMinPerDay() throws EmptyTimeFieldException{
     
-        return getSumPerDay() - getRequiredMinPerDay();
+        if( extraMinPerDay != 0 ) return extraMinPerDay;
+        extraMinPerDay = getSumPerDay() - getRequiredMinPerDay();
+        return extraMinPerDay;
     }
     
     protected LocalTime getLastTaskEndTime(){
@@ -92,7 +109,7 @@ public class WorkDay {
             return lastTask.getEndTime();
         }    
         return null;    // not elegant..yet..  epoch date is better...
-    }    
+    }
 
     public void setRequiredMinPerDay(long requiredMinPerDay) 
             throws NegativeMinutesOfWorkException {
@@ -116,7 +133,7 @@ public class WorkDay {
         if( Util.isMultipleQuarterHour(task)){
             tasks.add(task);
             sumPerDay = 0;
-            return;
+            extraMinPerDay = 0;
         }         
     }
 

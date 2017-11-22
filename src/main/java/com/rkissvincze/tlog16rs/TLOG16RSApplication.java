@@ -12,8 +12,6 @@ import io.dropwizard.setup.Environment;
 public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
 
     public static void main(final String[] args) throws Exception {
-        
-        
         new TLOG16RSApplication().run(args);
     }
 
@@ -23,8 +21,7 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     }
 
     @Override
-    public void initialize(final Bootstrap<TLOG16RSConfiguration> bootstrap) {
-                
+    public void initialize(final Bootstrap<TLOG16RSConfiguration> bootstrap) {                
     }
 
     @Override
@@ -33,8 +30,7 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
         CreateDatabase createDatabase = new CreateDatabase( configuration  );
         environment.jersey().register(new TLOG16RSResource( new TimeLogger()));
         environment.jersey().register(new hello());
-        environment.jersey().register(new TLOG16RSResource_greeting());        
-        
+        environment.jersey().register(new TLOG16RSResource_greeting());  
     }
 
 }

@@ -3,7 +3,10 @@ package com.rkissvincze.tlog16rs.resources;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.ServerConfig;
-import com.rkissvincze.Entities.TestEntity;
+import com.rkissvincze.Entities.Task;
+import com.rkissvincze.Entities.TimeLogger;
+import com.rkissvincze.Entities.WorkDay;
+import com.rkissvincze.Entities.WorkMonth;
 import com.rkissvincze.tlog16rs.TLOG16RSConfiguration;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -33,10 +36,6 @@ public class CreateDatabase {
         initDataSourceConfig(config); 
         initServerConfig(config);
     }
-
-    public EbeanServer getEbeanServer() {
-        return ebeanServer;
-    }
     
     private void initDataSourceConfig( TLOG16RSConfiguration config ){
         dataSourceConfig = new DataSourceConfig();
@@ -53,21 +52,26 @@ public class CreateDatabase {
         serverConfig.setDdlRun(false);           // the database will be generate, if it TRUE
         serverConfig.setRegister(true);
         serverConfig.setDataSourceConfig(dataSourceConfig);
-        serverConfig.addClass(TestEntity.class);
+//        serverConfig.addClass(TimeLogger.class);    //Ezeket megkapja a gradle.build végéről a classes.doLast -ból
+//        serverConfig.addClass(WorkMonth.class);
+//        serverConfig.addClass(WorkDay.class);
+//        serverConfig.addClass(Task.class);        
         serverConfig.setDefaultServer(true);
        
         ebeanServer = EbeanServerFactory.create(serverConfig);
     }
     
     private void updateSchema( TLOG16RSConfiguration config ){
-        try {                                   
-            Connection connection = DriverManager.getConnection( 
-                "jdbc:mariadb://localhost:3306/timelogger?user=root&password=katika" );
+        try { 
+            Connection connection = DriverManager.getConnection(
+                                                config.getDbUrl(), 
+                                                config.getDbUsername(), 
+                                                config.getDbPassword());            
             Liquibase liquBase = new Liquibase("migrations.xml", 
                                                 new ClassLoaderResourceAccessor(), 
                                                 new JdbcConnection(connection));
             liquBase.update(new Contexts());        
-        } catch (SQLException | LiquibaseException ex) {
+        }catch(SQLException | LiquibaseException ex) {
             Logger.getLogger(CreateDatabase.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Liqubase ERROR..." + ex.getMessage());
         }

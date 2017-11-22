@@ -2,4 +2,4 @@ dbDriver: org.mariadb.jdbc.Driver
 dbUrl: jdbc:mariadb://127.0.0.1:3306/timelogger
 dbUsername: root
 dbPassword: katika
-dbName: test_entity
+dbName: timelogger

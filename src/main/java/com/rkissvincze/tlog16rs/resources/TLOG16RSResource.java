@@ -2,7 +2,6 @@ package com.rkissvincze.tlog16rs.resources;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
-import com.rkissvincze.Entities.TestEntity;
 import com.rkissvincze.Beans.DeleteTaskRB;
 import com.rkissvincze.Beans.ModifyTaskRB;
 import com.rkissvincze.Beans.TaskRB;
@@ -49,6 +48,8 @@ public class TLOG16RSResource {
     
     public TLOG16RSResource( TimeLogger timeLogger ){
         this.timelogger = timeLogger;
+        
+        timelogger = Ebean.find(TimeLogger.class, 4);
     }
     
     
@@ -67,11 +68,12 @@ public class TLOG16RSResource {
         WorkMonth workMonth = WorkMonth.fromNumbers(month.getYear(), month.getMonth());
         try{
             timelogger.addMonth(workMonth);
+            Ebean.save(timelogger);
             return Response.ok(month).build();
         }catch(NotNewDateException e){
-            Response.serverError();
             System.err.println(e.getMessage());
             log.error(e.getMessage());
+            Response.serverError();
         }
         return Response.status(Response.Status.SEE_OTHER).build();
     }
@@ -87,7 +89,8 @@ public class TLOG16RSResource {
         wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());
             System.out.println("A WÖRKÓNT" + wm);
         wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), wm);
-            System.out.println("A WORKDÉJ: " + wd);       
+            System.out.println("A WORKDÉJ: " + wd);
+        Ebean.save(wm);
             return Response.ok( wd, MediaType.APPLICATION_JSON).build();
         }catch( WeekendNotEnabledException | NotNewDateException | 
                 NotTheSameMonthException |NegativeMinutesOfWorkException | FutureWorkException e){
@@ -317,22 +320,25 @@ public class TLOG16RSResource {
     @DELETE                                                                        
     @Path("/workmonths/")
     public Response deleteAllTheWorkmonts(){
-        timelogger.getMonths().clear();
+        //timelogger.getMonths().clear();                       //// ELviéeg így csak a hóapoat törli, utána frissíti magát...
+        //Ebean.save(timelogger);
+        Ebean.deleteAll( timelogger.getMonths() );
+        timelogger = Ebean.find(TimeLogger.class, 4);
+        
         return Response.status(Response.Status.NO_CONTENT).build();
     }
     
-    @POST
-    @Path("/save/test")
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes(MediaType.TEXT_PLAIN)
-    public Response createEntity( String entityText ){
-        System.out.println("SAVE...." + entityText);
-        TestEntity entityTest = new TestEntity();
-        entityTest.setText(entityText);
-        Ebean.save(entityTest);
-//        entityText = entityText + "helloka";
-        return Response.ok(entityText).build();
-    }
+//    @POST                         It is only for testing the LiquiBase
+//    @Path("/save/test")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    @Consumes(MediaType.TEXT_PLAIN)
+//    public Response createEntity( String entityText ){
+//        System.out.println("SAVE...." + entityText);
+//        TestEntity entityTest = new TestEntity();
+//        entityTest.setText(entityText);
+//        Ebean.save(entityTest);
+//        return Response.ok(entityText).build();
+//    }
     
     
     /*
