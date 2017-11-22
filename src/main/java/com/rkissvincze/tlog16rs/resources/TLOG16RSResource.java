@@ -44,14 +44,16 @@ import lombok.extern.slf4j.Slf4j;
 public class TLOG16RSResource {
     
     TimeLogger timelogger;
-    private EbeanServer ebeanServer;
     
     public TLOG16RSResource( TimeLogger timeLogger ){
-        this.timelogger = timeLogger;
         
-        timelogger = Ebean.find(TimeLogger.class, 4);
-    }
-    
+        timelogger = Ebean.find(TimeLogger.class, 1);
+        
+        if (timelogger == null){
+        this.timelogger = timeLogger;
+        Ebean.save(timelogger);
+        }
+    }    
     
     @GET
     @Path("/workmonths")
@@ -88,7 +90,7 @@ public class TLOG16RSResource {
         try{
         wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());
             System.out.println("A WÖRKÓNT" + wm);
-        wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), wm);
+        wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), (int) workday.getRequiredHour(),wm);
             System.out.println("A WORKDÉJ: " + wd);
         Ebean.save(wm);
             return Response.ok( wd, MediaType.APPLICATION_JSON).build();
@@ -105,7 +107,8 @@ public class TLOG16RSResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addTask( TaskRB task ){
-         WorkMonth wm = null;       
+        int reqMinDay = 0;
+        WorkMonth wm = null;       
         WorkDay wd = null;
         Task tsk = null;        
         try {
@@ -117,7 +120,7 @@ public class TLOG16RSResource {
         }        
         try {
             wd = createNewDayOrGetTheExisting( 
-                    task.getYear(), task.getMonth(), task.getDay(), wm);
+                    task.getYear(), task.getMonth(), task.getDay(), reqMinDay, wm);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
                 FutureWorkException ex) {
@@ -154,7 +157,7 @@ public class TLOG16RSResource {
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
-        }
+        }        
         return Response.ok(wm.getDays(), MediaType.APPLICATION_JSON).build();
     }
     
@@ -165,6 +168,7 @@ public class TLOG16RSResource {
     public Response displaysTasks( @PathParam("year") String year,
                                    @PathParam( "month" ) String month, 
                                    @PathParam( "day" ) String day  ){
+        int reqMinDay = 0;
         System.out.println("ENTERING..Y/M/D.." + year + month+day);
         if( !year.matches("\\d{4}")  || !month.matches("\\d{2}") || !day.matches("\\d{2}")) 
                 return Response.status(Response.Status.CONFLICT).build();
@@ -180,10 +184,12 @@ public class TLOG16RSResource {
             log.error(ex.getMessage());
         }        
         try {
-            wd = createNewDayOrGetTheExisting( 
+            wd = createNewDayOrGetTheExisting(
+                    
                     Integer.parseInt(year), 
                     Integer.parseInt(month), 
-                    Integer.parseInt(day), wm);
+                    Integer.parseInt(day),
+                    reqMinDay, wm);
             System.out.println("Y/M/D...WD = :" + wd);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
@@ -199,6 +205,7 @@ public class TLOG16RSResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response finishTask(ModifyTaskRB taskFinish){
+        int reqMinDay = 0;
         WorkMonth wm = null;       
         WorkDay wd = null;
         Task tsk = null;
@@ -212,10 +219,11 @@ public class TLOG16RSResource {
             log.error(ex.getMessage());
         }        
         try {
-            wd = createNewDayOrGetTheExisting( 
+            wd = createNewDayOrGetTheExisting(                     
                     taskFinish.getYear(), 
                     taskFinish.getMonth(), 
-                    taskFinish.getDay(), wm);
+                    taskFinish.getDay(),
+                    reqMinDay, wm);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
                 FutureWorkException ex) {
@@ -249,6 +257,7 @@ public class TLOG16RSResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyTask(ModifyTaskRB taskRB) {
+        int reqMinDay = 0;
         WorkMonth wm = null;       
         WorkDay wd = null;
         Task tsk = null;
@@ -263,10 +272,11 @@ public class TLOG16RSResource {
             log.error(ex.getMessage());
         }        
         try {
-            wd = createNewDayOrGetTheExisting( 
+            wd = createNewDayOrGetTheExisting(                     
                     taskRB.getYear(), 
                     taskRB.getMonth(), 
-                    taskRB.getDay(), wm);
+                    taskRB.getDay(),
+                    reqMinDay, wm);
             System.out.println("GetTheDÉJInTaskModiy.." + wd);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
@@ -323,7 +333,7 @@ public class TLOG16RSResource {
         //timelogger.getMonths().clear();                       //// ELviéeg így csak a hóapoat törli, utána frissíti magát...
         //Ebean.save(timelogger);
         Ebean.deleteAll( timelogger.getMonths() );
-        timelogger = Ebean.find(TimeLogger.class, 4);
+        timelogger = Ebean.find(TimeLogger.class, 1);
         
         return Response.status(Response.Status.NO_CONTENT).build();
     }
@@ -391,13 +401,13 @@ public class TLOG16RSResource {
         return tsk;
     }
 
-    protected WorkDay createNewDayOrGetTheExisting(int year, int month, int day, WorkMonth wm) 
+    protected WorkDay createNewDayOrGetTheExisting( int year, int month, int day, int reqMinDay, WorkMonth wm) 
             throws WeekendNotEnabledException, NegativeMinutesOfWorkException, 
             NotTheSameMonthException, NotNewDateException, FutureWorkException {
         WorkDay wd;
         if( !ServicesResource.isDayExits(timelogger, year, month, day)){
             System.out.println("THE DAY NOT EXITS.....I CREATE IT");
-            wd = ServicesResource.createWorkDay(450, year, month, day);
+            wd = ServicesResource.createWorkDay(reqMinDay, year, month, day);
             wm.addWorkDay(wd);
         }else{
             System.out.println("THE DAY EXITS.....");
