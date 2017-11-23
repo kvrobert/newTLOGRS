@@ -6,7 +6,8 @@
 package com.rkissvincze.Entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.YearMonthSerializer;
 import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.NotTheSameMonthException;
@@ -37,15 +38,17 @@ public class WorkMonth {
     
     @Id
     @GeneratedValue
+    @JsonIgnore
     private int id;
     
-    @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<WorkDay> days = new ArrayList<>();
     
-    @JsonProperty("WorkMonth")
-    @Transient
-    private YearMonth date = YearMonth.now();
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<WorkDay> days = new ArrayList<>();    
+    
+    @JsonIgnore    
+    @Transient    
+    private YearMonth date;    
+    
     @Column(name = "date")
     private String monthDate;
     
@@ -55,9 +58,7 @@ public class WorkMonth {
     
     private long extraMinPerMonth;
     
-    
-    public WorkMonth(){}
-    
+        
     private WorkMonth(int year, int month){        
         this.date = YearMonth.of(year, month);
         setMonthDate();
@@ -88,7 +89,7 @@ public class WorkMonth {
         return new WorkMonth( yearMonth );
     }
 
-    protected long getSumPerMonth() throws EmptyTimeFieldException {
+    public long getSumPerMonth() throws EmptyTimeFieldException {
         
         long summ = 0;
         if ( sumPerMonth != 0 ) return sumPerMonth;        
@@ -99,14 +100,14 @@ public class WorkMonth {
         return sumPerMonth;
     }
 
-    protected long getRequiredMinPerMonth() {
+    public long getRequiredMinPerMonth() {
         
         if( requiredMinPerMonth != 0 ) return requiredMinPerMonth;
         requiredMinPerMonth = days.stream().mapToLong(WorkDay::getRequiredMinPerDay).sum();
         return requiredMinPerMonth;
     }
     
-    protected long getExtraMinPerMonth() throws EmptyTimeFieldException{
+    public long getExtraMinPerMonth() throws EmptyTimeFieldException{
         
         if(extraMinPerMonth != 0) return extraMinPerMonth;
         extraMinPerMonth = getSumPerMonth() - getRequiredMinPerMonth();
@@ -127,23 +128,23 @@ public class WorkMonth {
     }
     
     public boolean isNewDate(WorkDay workDay){
-            
+        if( this.date == null ) this.date =  convertOwnMontDateToYearMonth();        
         return days.stream().filter(i -> i.getActualDay().equals( workDay.getActualDay() )).count() == 0;
     }
     
     public boolean isSameMonth(WorkDay workDay){
-    
+        if( this.date == null ) this.date =  convertOwnMontDateToYearMonth();
         return date.getMonth() == workDay.getActualDay().getMonth();
+        
     }
     
-    public void addWorkDay(WorkDay workDay, boolean isWeekendEnabled) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException{
-         System.out.println("Adding a DAY....");
+    public void addWorkDay(WorkDay workDay, boolean isWeekendEnabled) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, EmptyTimeFieldException{
         if( !isNewDate(workDay) ) throw new NotNewDateException(" This day (" + workDay.getActualDay() +") already exist. Give an another. ");
         if( isSameMonth(workDay) ){
         
-            if( isWeekendEnabled || Util.isWeekDay(workDay) ){
-                
+            if( isWeekendEnabled || Util.isWeekDay(workDay) ){                
                 days.add(workDay);
+                System.out.println("Added a DAY....");
                 sumPerMonth = 0;
                 requiredMinPerMonth = 0;
                 extraMinPerMonth = 0;
@@ -152,12 +153,16 @@ public class WorkMonth {
         }else{ throw new NotTheSameMonthException(); }
     }
     
-    public void addWorkDay(WorkDay workDay) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException{
+    public void addWorkDay(WorkDay workDay) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, EmptyTimeFieldException{
         addWorkDay(workDay, false);
     }
 
     @Override
     public String toString() {
-        return "WorkMonth: " + date;
+        return "WorkMonth: " + monthDate;
+    }    
+
+    private YearMonth convertOwnMontDateToYearMonth() {
+        return YearMonth.parse(this.getMonthDate());
     }
 }

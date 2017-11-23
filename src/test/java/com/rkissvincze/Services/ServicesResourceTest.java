@@ -50,7 +50,7 @@ public class ServicesResourceTest {
     
     @Test
     public void testIsMonthExits_Timelogger() throws NotNewDateException {
-        WorkMonth workMonth = new WorkMonth();
+        WorkMonth workMonth = WorkMonth.fromNumbers(2017, 11);
         workMonth.setDate(YearMonth.of(2017, 11));
         timelogger.addMonth(workMonth);
         Assert.assertTrue(ServicesResource.isMonthExits(timelogger, 2017, 11));
@@ -60,7 +60,7 @@ public class ServicesResourceTest {
      */
     @Test
     public void testCreateWorkMonthInActualDate() {
-        WorkMonth exceptWorkMonth = new WorkMonth();
+        WorkMonth exceptWorkMonth = WorkMonth.fromNumbers(2017, 11);
         exceptWorkMonth.setDate(YearMonth.of(2017, 11));
         WorkMonth resultWorkMonth = ServicesResource.createWorkMonth(2017, 11);
         Assert.assertEquals(exceptWorkMonth.getDate(), resultWorkMonth.getDate());        
@@ -82,7 +82,7 @@ public class ServicesResourceTest {
     public void testIsDayExitsWithActualMOnthAndExitDay() throws 
             NegativeMinutesOfWorkException, FutureWorkException, 
             WeekendNotEnabledException, NotNewDateException, 
-            NotTheSameMonthException{
+            NotTheSameMonthException, EmptyTimeFieldException{
         WorkMonth wm = WorkMonth.fromNumbers(2017, 11);
         timelogger.addMonth(wm);
         WorkDay wd = WorkDay.fromNumbers(450, 2017, 11, 16) ;

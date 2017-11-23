@@ -1,7 +1,6 @@
 package com.rkissvincze.tlog16rs.resources;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
 import com.rkissvincze.Beans.DeleteTaskRB;
 import com.rkissvincze.Beans.ModifyTaskRB;
 import com.rkissvincze.Beans.TaskRB;
@@ -24,8 +23,9 @@ import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Services.ServicesResource;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.YearMonth;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -49,6 +49,11 @@ public class TLOG16RSResource {
         
         timelogger = Ebean.find(TimeLogger.class, 1);
         
+        System.out.println("---------------------------------------------------------------------------------");
+        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(0));
+        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(1));
+        System.out.println("---------------------------------------------------------------------------------");
+        
         if (timelogger == null){
         this.timelogger = timeLogger;
         Ebean.save(timelogger);
@@ -58,7 +63,10 @@ public class TLOG16RSResource {
     @GET
     @Path("/workmonths")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response displaysWorkMoths(){        
+    public Response displaysWorkMoths(){ 
+        
+        System.out.println(timelogger.getMonths());
+        
         return Response.ok( timelogger.getMonths(), MediaType.APPLICATION_JSON).build();        
     }
    
@@ -66,7 +74,7 @@ public class TLOG16RSResource {
     @Path("/workmonths")                                // HIBAKEZELÉS??????
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addWorkMonth(WorkMonthRB month){
+    public Response addWorkMonth(WorkMonthRB month){        
         WorkMonth workMonth = WorkMonth.fromNumbers(month.getYear(), month.getMonth());
         try{
             timelogger.addMonth(workMonth);
@@ -88,20 +96,29 @@ public class TLOG16RSResource {
         WorkMonth wm = null;
         WorkDay wd = null;
         try{
+            System.out.println("Timelogger WórkMóntjai..." + timelogger.getMonths());
         wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());
-            System.out.println("A WÖRKÓNT" + wm);
+            System.out.println("A WÖRKMÓNT..date..YearMonth" + wm.getDate());
+            System.out.println("A WÖRKMÓNT..monthDate..String" + wm.getMonthDate());
+            System.out.println("A WÖRKMÓNT..Workdéj List.." + wm.getDays());
+            
         wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), (int) workday.getRequiredHour(),wm);
             System.out.println("A WORKDÉJ: " + wd);
-        Ebean.save(wm);
+            Ebean.save(wm);            
+            Ebean.save(timelogger);
+            
+            
             return Response.ok( wd, MediaType.APPLICATION_JSON).build();
         }catch( WeekendNotEnabledException | NotNewDateException | 
                 NotTheSameMonthException |NegativeMinutesOfWorkException | FutureWorkException e){
             System.err.println(e.getMessage());
             log.error(e.getMessage());
-        } 
+        } catch (EmptyTimeFieldException ex) { 
+            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return Response.status(Response.Status.SEE_OTHER).build();
     }
-    
+        
     @POST
     @Path("/workmonths/workdays/tasks/start")       /// innnen.....
     @Consumes(MediaType.APPLICATION_JSON)
@@ -126,6 +143,8 @@ public class TLOG16RSResource {
                 FutureWorkException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+        } catch (EmptyTimeFieldException ex) {
+            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
             tsk = createNewTaskOrGetTheExisting(wd, task);
@@ -196,6 +215,8 @@ public class TLOG16RSResource {
                 FutureWorkException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+        } catch (EmptyTimeFieldException ex) {
+            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
         }
         return Response.ok(wd.getTasks(), MediaType.APPLICATION_JSON).build();
     }
@@ -229,7 +250,9 @@ public class TLOG16RSResource {
                 FutureWorkException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
-        }        
+        } catch (EmptyTimeFieldException ex) {        
+            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try {
             tsk = createNewTaskOrGetTheExisting(wd, taskFinish);
         }catch ( NoTaskIdException | InvalidTaskIdException | 
@@ -283,7 +306,9 @@ public class TLOG16RSResource {
                 FutureWorkException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
-        }        
+        } catch (EmptyTimeFieldException ex) {        
+            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try {
             tsk = createNewTaskOrGetTheExisting(wd, taskRB);
              System.out.println("GetTheTASKinTaskModiy.." + tsk);
@@ -403,11 +428,11 @@ public class TLOG16RSResource {
 
     protected WorkDay createNewDayOrGetTheExisting( int year, int month, int day, int reqMinDay, WorkMonth wm) 
             throws WeekendNotEnabledException, NegativeMinutesOfWorkException, 
-            NotTheSameMonthException, NotNewDateException, FutureWorkException {
+            NotTheSameMonthException, NotNewDateException, FutureWorkException, EmptyTimeFieldException {
         WorkDay wd;
         if( !ServicesResource.isDayExits(timelogger, year, month, day)){
             System.out.println("THE DAY NOT EXITS.....I CREATE IT");
-            wd = ServicesResource.createWorkDay(reqMinDay, year, month, day);
+            wd = ServicesResource.createWorkDay(reqMinDay, year, month, day);            
             wm.addWorkDay(wd);
         }else{
             System.out.println("THE DAY EXITS.....");
@@ -430,8 +455,10 @@ public class TLOG16RSResource {
 
     protected WorkMonth getTheMonth(int year, int month) {
         int firstElement = 0;
+        String yearMonth = year + "-" + month;
+        System.out.println("getTheMonth-ból.." + yearMonth );
         List<WorkMonth> monthSelected =  timelogger.getMonths().stream()
-                .filter(wm -> wm.getDate().equals(YearMonth.of(year, month)))
+                .filter(wm -> wm.getMonthDate().equals( yearMonth ))       //getDate -> getMonthDate + YerMOnth.of -> parse
                 .collect(Collectors.toList());
         return monthSelected.get(firstElement);
     }
@@ -454,5 +481,5 @@ public class TLOG16RSResource {
                 tsk.getStartTime().equals( LocalTime.parse(startTime) ) ).collect(Collectors.toList());
         return taskSelected.get(firstElement);
     }
-    
+          
 }

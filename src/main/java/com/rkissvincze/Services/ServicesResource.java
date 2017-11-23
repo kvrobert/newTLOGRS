@@ -19,6 +19,9 @@ import com.rkissvincze.Exceptions.NoTaskIdException;
 import com.rkissvincze.Exceptions.NotExpectedTimeOrderException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -28,6 +31,13 @@ public class ServicesResource {
     
     public static boolean isMonthExits( TimeLogger timelogger, int year, int month){
         
+        System.out.println("Enter the is month exists...");
+        System.out.println("The first MOnth..." + timelogger.getMonths().get(0));
+        System.out.println("The Second MOnth..." + timelogger.getMonths().get(1));
+        
+        System.out.println("The last MOnth...getDate" + timelogger.getMonths().get(timelogger.getMonths().size()-1).getDate());
+        System.out.println("The last MOnth...getMonthDate" + timelogger.getMonths().get(timelogger.getMonths().size()-1).getMonthDate());
+        System.out.println("The last YeraMont Parser...:" + YearMonth.parse(timelogger.getMonths().get(timelogger.getMonths().size()-1).getMonthDate()));
         return !timelogger.isNewMonth( WorkMonth.fromNumbers(year, month) );
     }
     
@@ -36,11 +46,18 @@ public class ServicesResource {
     }
     
     public static boolean isDayExits(TimeLogger timeLogger, int year, int month, int day){
+//        if( !isMonthExits(timeLogger, year, month) ) return false;
+//        WorkMonth workMonth = timeLogger.getMonths().stream().findFirst()
+//                .filter(wm -> wm.getDate().getMonthValue() == month ).get();
         
         if( !isMonthExits(timeLogger, year, month) ) return false;
-        
-        WorkMonth workMonth = timeLogger.getMonths().stream().findFirst()
-                .filter(wm -> wm.getDate().getMonthValue() == month ).get();
+        int firstElement = 0;
+        String yearMonth = year + "-" + month;
+        System.out.println("getTheMonth-ból.." + yearMonth );
+        List<WorkMonth> monthSelected =  timeLogger.getMonths().stream()
+                .filter(wm -> wm.getMonthDate().equals( yearMonth )) 
+                .collect(Collectors.toList());
+        WorkMonth workMonth =  monthSelected.get(firstElement); 
         
         return workMonth.getDays().stream().filter( 
                 wd -> wd.getActualDay().equals( 
@@ -77,6 +94,15 @@ public class ServicesResource {
                     NoTaskIdException, InvalidTaskIdException{
         Task task = Task.fromString(taskId, comment, startTime, endTime);
         return task;    
+    }
+    
+    public void updateWorkDayAndWorkMonthStatistic(WorkDay WorkDay, WorkMonth workMonth) throws EmptyTimeFieldException{
+        WorkDay.getSumPerDay();
+        WorkDay.getExtraMinPerDay();
+        
+        workMonth.getSumPerMonth();
+        workMonth.getRequiredMinPerMonth();
+        workMonth.getExtraMinPerMonth();
     }
     
 //    public static Task modifyTask( ModifyTaskRB taskmodifyRB ) throws             Talán nem is kell ez

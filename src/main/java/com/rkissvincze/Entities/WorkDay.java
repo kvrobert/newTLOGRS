@@ -35,8 +35,8 @@ public class WorkDay {
     @GeneratedValue
     private int id;
     
-    @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Task> tasks = new ArrayList<>();
     
     private long requiredMinPerDay = (long) (7.5 * 60);

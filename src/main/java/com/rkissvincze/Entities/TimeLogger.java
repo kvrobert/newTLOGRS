@@ -33,8 +33,8 @@ public class TimeLogger {
     private List<WorkMonth> months = new ArrayList<>();
       
     public boolean isNewMonth(WorkMonth workMonth){
-    
-        return months.stream().filter(i -> i.getDate().equals( workMonth.getDate() ) ).count() == 0;
+        System.out.println("TImelogger.....isNewMonth..." + (months.stream().filter(i -> i.getMonthDate().equals( workMonth.getMonthDate() ) ).count() == 0) );
+        return months.stream().filter(i -> i.getMonthDate().equals( workMonth.getMonthDate() ) ).count() == 0;      // változtatva a getMonthDate -ra
     }
     
     public void addMonth(WorkMonth workMonth) throws NotNewDateException{
