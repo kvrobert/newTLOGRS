@@ -42,6 +42,8 @@ public class Task {
     @JsonProperty
     private String comment;
     
+    private long minPerTask;
+    
    
     public Task(String taskId, String comment, LocalTime startTime, LocalTime endtime) 
             throws NotExpectedTimeOrderException, EmptyTimeFieldException, InvalidTaskIdException, NoTaskIdException{
@@ -116,7 +118,8 @@ public class Task {
         
         if( startTime == null && endTime == null ) throw new EmptyTimeFieldException();
             
-        return ChronoUnit.MINUTES.between(startTime, endTime);
+        minPerTask = ChronoUnit.MINUTES.between(startTime, endTime);
+        return minPerTask;
         
     }
 

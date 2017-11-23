@@ -92,7 +92,7 @@ public class WorkMonth {
     public long getSumPerMonth() throws EmptyTimeFieldException {
         
         long summ = 0;
-        if ( sumPerMonth != 0 ) return sumPerMonth;        
+        //if ( sumPerMonth != 0 ) return sumPerMonth;        
         for( WorkDay workDay : days ){
             summ += workDay.getSumPerDay();
         }
@@ -102,14 +102,14 @@ public class WorkMonth {
 
     public long getRequiredMinPerMonth() {
         
-        if( requiredMinPerMonth != 0 ) return requiredMinPerMonth;
+       // if( requiredMinPerMonth != 0 ) return requiredMinPerMonth;
         requiredMinPerMonth = days.stream().mapToLong(WorkDay::getRequiredMinPerDay).sum();
         return requiredMinPerMonth;
     }
     
     public long getExtraMinPerMonth() throws EmptyTimeFieldException{
         
-        if(extraMinPerMonth != 0) return extraMinPerMonth;
+       // if(extraMinPerMonth != 0) return extraMinPerMonth;
         extraMinPerMonth = getSumPerMonth() - getRequiredMinPerMonth();
         return extraMinPerMonth;
     }

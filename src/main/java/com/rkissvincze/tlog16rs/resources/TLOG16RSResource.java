@@ -49,10 +49,10 @@ public class TLOG16RSResource {
         
         timelogger = Ebean.find(TimeLogger.class, 1);
         
-        System.out.println("---------------------------------------------------------------------------------");
-        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(0));
-        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(1));
-        System.out.println("---------------------------------------------------------------------------------");
+//        System.out.println("---------------------------------------------------------------------------------");
+//        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(0));
+//        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(1));
+//        System.out.println("---------------------------------------------------------------------------------");
         
         if (timelogger == null){
         this.timelogger = timeLogger;
@@ -63,10 +63,7 @@ public class TLOG16RSResource {
     @GET
     @Path("/workmonths")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response displaysWorkMoths(){ 
-        
-        System.out.println(timelogger.getMonths());
-        
+    public Response displaysWorkMoths(){
         return Response.ok( timelogger.getMonths(), MediaType.APPLICATION_JSON).build();        
     }
    
@@ -96,26 +93,17 @@ public class TLOG16RSResource {
         WorkMonth wm = null;
         WorkDay wd = null;
         try{
-            System.out.println("Timelogger WórkMóntjai..." + timelogger.getMonths());
-        wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());
-            System.out.println("A WÖRKMÓNT..date..YearMonth" + wm.getDate());
-            System.out.println("A WÖRKMÓNT..monthDate..String" + wm.getMonthDate());
-            System.out.println("A WÖRKMÓNT..Workdéj List.." + wm.getDays());
-            
-        wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), (int) workday.getRequiredHour(),wm);
-            System.out.println("A WORKDÉJ: " + wd);
+            wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());            
+            wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), (int) workday.getRequiredHour(),wm);           
+            ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);
             Ebean.save(wm);            
-            Ebean.save(timelogger);
-            
-            
+            Ebean.save(timelogger);      
             return Response.ok( wd, MediaType.APPLICATION_JSON).build();
         }catch( WeekendNotEnabledException | NotNewDateException | 
-                NotTheSameMonthException |NegativeMinutesOfWorkException | FutureWorkException e){
+                NotTheSameMonthException |NegativeMinutesOfWorkException | FutureWorkException | EmptyTimeFieldException e){
             System.err.println(e.getMessage());
             log.error(e.getMessage());
-        } catch (EmptyTimeFieldException ex) { 
-            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } 
         return Response.status(Response.Status.SEE_OTHER).build();
     }
         
@@ -138,23 +126,26 @@ public class TLOG16RSResource {
         try {
             wd = createNewDayOrGetTheExisting( 
                     task.getYear(), task.getMonth(), task.getDay(), reqMinDay, wm);
+            System.out.println("Start TASK....WÖRKDÉJ...." + wd);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
-                FutureWorkException ex) {
+                FutureWorkException | EmptyTimeFieldException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
-        } catch (EmptyTimeFieldException ex) {
-            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } 
         try {
             tsk = createNewTaskOrGetTheExisting(wd, task);
+            ServicesResource.updateTaskStatistic(tsk);
+            ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);            
+            Ebean.save(wd);  
+            Ebean.update(wm);
+            Ebean.save(timelogger);
         }catch ( NoTaskIdException | InvalidTaskIdException | 
                 NotSeparatedTimesException | EmptyTimeFieldException | 
                 NotExpectedTimeOrderException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
-        }    
-        
+        }  
         return Response.ok(tsk, MediaType.APPLICATION_JSON).build();
     }
     
@@ -409,8 +400,7 @@ public class TLOG16RSResource {
         if( !ServicesResource.isTaskExits(
                 wd, 
                 taskRB.getTaskId(), 
-                taskRB.getStartTime())){
-            
+                taskRB.getStartTime())) {            
             tsk = ServicesResource.createTask(
                     taskRB.getTaskId(), 
                     taskRB.getComment(), 

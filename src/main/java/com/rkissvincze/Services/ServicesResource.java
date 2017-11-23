@@ -96,13 +96,16 @@ public class ServicesResource {
         return task;    
     }
     
-    public void updateWorkDayAndWorkMonthStatistic(WorkDay WorkDay, WorkMonth workMonth) throws EmptyTimeFieldException{
+    public static void updateWorkDayAndWorkMonthStatistic(WorkDay WorkDay, WorkMonth workMonth) throws EmptyTimeFieldException{
         WorkDay.getSumPerDay();
         WorkDay.getExtraMinPerDay();
         
         workMonth.getSumPerMonth();
         workMonth.getRequiredMinPerMonth();
         workMonth.getExtraMinPerMonth();
+    }
+    public static void updateTaskStatistic(Task task) throws EmptyTimeFieldException{
+        task.getMinPerTask();
     }
     
 //    public static Task modifyTask( ModifyTaskRB taskmodifyRB ) throws             Talán nem is kell ez
