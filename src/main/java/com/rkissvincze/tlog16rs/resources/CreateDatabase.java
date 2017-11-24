@@ -19,11 +19,13 @@ import liquibase.Liquibase;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author rkissvincze
  */
+@Slf4j
 public class CreateDatabase {
     
     private EbeanServer ebeanServer;
@@ -71,8 +73,8 @@ public class CreateDatabase {
                                                 new ClassLoaderResourceAccessor(), 
                                                 new JdbcConnection(connection));
             liquBase.update(new Contexts());        
-        }catch(SQLException | LiquibaseException ex) {
-            Logger.getLogger(CreateDatabase.class.getName()).log(Level.SEVERE, null, ex);
+        }catch(SQLException | LiquibaseException ex) {            
+            log.error(CreateDatabase.class.getName() + " " + ex.getMessage());            
             System.err.println("Liqubase ERROR..." + ex.getMessage());
         }
     }

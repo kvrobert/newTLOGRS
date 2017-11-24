@@ -28,7 +28,7 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
         CreateDatabase createDatabase = new CreateDatabase( configuration  );
-        environment.jersey().register(new TLOG16RSResource( new TimeLogger()));
+        environment.jersey().register(new TLOG16RSResource( new TimeLogger("Robesz") ));
         environment.jersey().register(new hello());
         environment.jersey().register(new TLOG16RSResource_greeting());  
     }

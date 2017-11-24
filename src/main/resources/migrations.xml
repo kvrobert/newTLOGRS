@@ -69,5 +69,13 @@
                                  referencedTableName="work_day" referencedColumnNames="id"  
                                  onDelete="RESTRICT" onUpdate="RESTRICT"/>
     </changeSet>
+    
+    <changeSet id="2" author="Robesz">
+        <addColumn catalogName="timelogger"
+                   schemaName="public"
+                   tableName="time_logger">
+            <column name="name" type="varchar(255)"/>
+        </addColumn>        
+    </changeSet>
 
 </databaseChangeLog>

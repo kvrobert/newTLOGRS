@@ -6,8 +6,6 @@
 package com.rkissvincze.Entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.YearMonthSerializer;
 import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.NotTheSameMonthException;
@@ -25,12 +23,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author rkissvincze
  */
-
+@Slf4j
 @Entity
 @Getter
 @Setter
@@ -42,7 +41,7 @@ public class WorkMonth {
     private int id;
     
     
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<WorkDay> days = new ArrayList<>();    
     
     @JsonIgnore    
@@ -144,7 +143,7 @@ public class WorkMonth {
         
             if( isWeekendEnabled || Util.isWeekDay(workDay) ){                
                 days.add(workDay);
-                System.out.println("Added a DAY....");
+                log.info("AddWorkDay with Weekend flag " + isWeekendEnabled);
                 sumPerMonth = 0;
                 requiredMinPerMonth = 0;
                 extraMinPerMonth = 0;

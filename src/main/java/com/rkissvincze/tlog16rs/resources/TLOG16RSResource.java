@@ -46,14 +46,10 @@ public class TLOG16RSResource {
     TimeLogger timelogger;
     
     public TLOG16RSResource( TimeLogger timeLogger ){
-        
-        timelogger = Ebean.find(TimeLogger.class, 1);
-        
-//        System.out.println("---------------------------------------------------------------------------------");
-//        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(0));
-//        System.out.println("Timelogger Konst....databaseből" + timelogger + " " + timelogger.getMonths().get(1));
-//        System.out.println("---------------------------------------------------------------------------------");
-        
+               
+        timelogger = Ebean.find(TimeLogger.class)
+                          .where().eq("name", "Robesz")
+                          .findUnique();  
         if (timelogger == null){
         this.timelogger = timeLogger;
         Ebean.save(timelogger);
@@ -64,7 +60,9 @@ public class TLOG16RSResource {
     @Path("/workmonths")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response displaysWorkMoths(){
-        return Response.ok( timelogger.getMonths(), MediaType.APPLICATION_JSON).build();        
+        log.info("Calling displaysWorkMoths() method");
+        return Response.ok( timelogger.getMonths(), 
+                            MediaType.APPLICATION_JSON).build();        
     }
    
     @POST
@@ -72,7 +70,8 @@ public class TLOG16RSResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addWorkMonth(WorkMonthRB month){        
-        WorkMonth workMonth = WorkMonth.fromNumbers(month.getYear(), month.getMonth());
+        WorkMonth workMonth = WorkMonth.fromNumbers(month.getYear(), 
+                                                    month.getMonth());
         try{
             timelogger.addMonth(workMonth);
             Ebean.save(timelogger);
@@ -93,14 +92,19 @@ public class TLOG16RSResource {
         WorkMonth wm = null;
         WorkDay wd = null;
         try{
-            wm = createNewMonthOrGetTheExisting(workday.getYear(), workday.getMonth());            
-            wd = createNewDayOrGetTheExisting(workday.getYear(), workday.getMonth(), workday.getDay(), (int) workday.getRequiredHour(),wm);           
+            wm = createNewMonthOrGetTheExisting(workday.getYear(), 
+                                                workday.getMonth());            
+            wd = createNewDayOrGetTheExisting(workday.getYear(), 
+                                              workday.getMonth(), 
+                                              workday.getDay(), 
+                                              (int) workday.getRequiredHour(),wm);           
             ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);
             Ebean.save(wm);            
             Ebean.save(timelogger);      
             return Response.ok( wd, MediaType.APPLICATION_JSON).build();
         }catch( WeekendNotEnabledException | NotNewDateException | 
-                NotTheSameMonthException |NegativeMinutesOfWorkException | FutureWorkException | EmptyTimeFieldException e){
+                NotTheSameMonthException |NegativeMinutesOfWorkException | 
+                FutureWorkException | EmptyTimeFieldException e){
             System.err.println(e.getMessage());
             log.error(e.getMessage());
         } 
@@ -108,7 +112,7 @@ public class TLOG16RSResource {
     }
         
     @POST
-    @Path("/workmonths/workdays/tasks/start")       /// innnen.....
+    @Path("/workmonths/workdays/tasks/start")       
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addTask( TaskRB task ){
@@ -125,7 +129,7 @@ public class TLOG16RSResource {
         }        
         try {
             wd = createNewDayOrGetTheExisting( 
-                    task.getYear(), task.getMonth(), task.getDay(), reqMinDay, wm);
+                task.getYear(), task.getMonth(), task.getDay(), reqMinDay, wm);
             System.out.println("Start TASK....WÖRKDÉJ...." + wd);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
@@ -150,8 +154,8 @@ public class TLOG16RSResource {
     }
     
     @GET
-    @Path("/workmonths/{year}/{month}")         
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/workmonths/{year}/{month}")         /// innnen..... 
+    @Consumes(MediaType.APPLICATION_JSON)       /// + tesztelések SOAP + old, form commandLineUI
     @Produces(MediaType.APPLICATION_JSON)
     public Response displaysDays( @PathParam("year") String year, 
                                   @PathParam( "month" ) String month  ){
@@ -180,7 +184,9 @@ public class TLOG16RSResource {
                                    @PathParam( "day" ) String day  ){
         int reqMinDay = 0;
         System.out.println("ENTERING..Y/M/D.." + year + month+day);
-        if( !year.matches("\\d{4}")  || !month.matches("\\d{2}") || !day.matches("\\d{2}")) 
+        if( !year.matches("\\d{4}")  || 
+            !month.matches("\\d{2}") || 
+            !day.matches("\\d{2}")) 
                 return Response.status(Response.Status.CONFLICT).build();
         WorkMonth wm = null;       
         WorkDay wd = null;
@@ -346,29 +352,13 @@ public class TLOG16RSResource {
     @DELETE                                                                        
     @Path("/workmonths/")
     public Response deleteAllTheWorkmonts(){
-        //timelogger.getMonths().clear();                       //// ELviéeg így csak a hóapoat törli, utána frissíti magát...
-        //Ebean.save(timelogger);
         Ebean.deleteAll( timelogger.getMonths() );
-        timelogger = Ebean.find(TimeLogger.class, 1);
-        
+        timelogger = Ebean.find(TimeLogger.class, 1);        
         return Response.status(Response.Status.NO_CONTENT).build();
-    }
-    
-//    @POST                         It is only for testing the LiquiBase
-//    @Path("/save/test")
-//    @Produces(MediaType.TEXT_PLAIN)
-//    @Consumes(MediaType.TEXT_PLAIN)
-//    public Response createEntity( String entityText ){
-//        System.out.println("SAVE...." + entityText);
-//        TestEntity entityTest = new TestEntity();
-//        entityTest.setText(entityText);
-//        Ebean.save(entityTest);
-//        return Response.ok(entityText).build();
-//    }
-    
+    }   
     
     /*
-     *  ::: SERVICES ::
+     *                      ::: SERVICES ::
      *
      */      
     
@@ -448,7 +438,7 @@ public class TLOG16RSResource {
         String yearMonth = year + "-" + month;
         System.out.println("getTheMonth-ból.." + yearMonth );
         List<WorkMonth> monthSelected =  timelogger.getMonths().stream()
-                .filter(wm -> wm.getMonthDate().equals( yearMonth ))       //getDate -> getMonthDate + YerMOnth.of -> parse
+                .filter(wm -> wm.getMonthDate().equals( yearMonth ))       
                 .collect(Collectors.toList());
         return monthSelected.get(firstElement);
     }

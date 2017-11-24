@@ -20,11 +20,13 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  * @author rkissvincze
  */
+@Slf4j
 @Entity
 @Getter
 @Setter
@@ -36,7 +38,7 @@ public class WorkDay {
     private int id;
     
     
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Task> tasks = new ArrayList<>();
     
     private long requiredMinPerDay = (long) (7.5 * 60);
@@ -81,8 +83,7 @@ public class WorkDay {
     public long getSumPerDay() throws EmptyTimeFieldException {
         
        long summ = 0;
-        if( sumPerDay != 0 ) return sumPerDay;
-       // return tasks.stream().mapToLong( task -> task.getMinPerTask() ).sum();     Exception miatt nem ment....
+       if( sumPerDay != 0 ) return sumPerDay;       
        for( Task task : tasks )
        {
            summ += task.getMinPerTask();
@@ -132,6 +133,7 @@ public class WorkDay {
         } 
         if( Util.isMultipleQuarterHour(task)){
             tasks.add(task);
+            log.info("Added Task...");
             sumPerDay = 0;
             extraMinPerDay = 0;
         }         
