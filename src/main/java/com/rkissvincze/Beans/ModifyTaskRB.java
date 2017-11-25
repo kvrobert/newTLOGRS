@@ -19,8 +19,7 @@ public class ModifyTaskRB {
     String TaskId;
     String startTime;
     String newTaskId;
-    String newStartTime;
-    String newEndTime;
     String newComment;
-    
+    String newStartTime;
+    String newEndTime;    
 }

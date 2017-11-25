@@ -35,6 +35,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -44,17 +45,23 @@ import lombok.extern.slf4j.Slf4j;
 public class TLOG16RSResource {
     
     TimeLogger timelogger;
+    int requiedDayMin = 450;
+    String user;
     
-    public TLOG16RSResource( TimeLogger timeLogger ){
-               
-        timelogger = Ebean.find(TimeLogger.class)
-                          .where().eq("name", "Robesz")
-                          .findUnique();  
+    public TLOG16RSResource( TimeLogger timeLogger ){            
+        user = "Robesz";
+        getUsersTimeLoggerFromDB();  
         if (timelogger == null){
         this.timelogger = timeLogger;
         Ebean.save(timelogger);
         }
     }    
+
+    private void getUsersTimeLoggerFromDB() {
+        timelogger = Ebean.find(TimeLogger.class)
+                .where().eq("name", user)
+                .findUnique();
+    }
     
     @GET
     @Path("/workmonths")
@@ -79,9 +86,9 @@ public class TLOG16RSResource {
         }catch(NotNewDateException e){
             System.err.println(e.getMessage());
             log.error(e.getMessage());
-            Response.serverError();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build());
         }
-        return Response.status(Response.Status.SEE_OTHER).build();
+        //return Response.status(Response.Status.SEE_OTHER).build();
     }
     
     @POST
@@ -99,7 +106,7 @@ public class TLOG16RSResource {
                                               workday.getDay(), 
                                               (int) workday.getRequiredHour(),wm);           
             ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);
-            Ebean.save(wm);            
+            //Ebean.save(wm);            
             Ebean.save(timelogger);      
             return Response.ok( wd, MediaType.APPLICATION_JSON).build();
         }catch( WeekendNotEnabledException | NotNewDateException | 
@@ -116,7 +123,7 @@ public class TLOG16RSResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addTask( TaskRB task ){
-        int reqMinDay = 0;
+        int reqMinDay = requiedDayMin;
         WorkMonth wm = null;       
         WorkDay wd = null;
         Task tsk = null;        
@@ -141,9 +148,10 @@ public class TLOG16RSResource {
             tsk = createNewTaskOrGetTheExisting(wd, task);
             ServicesResource.updateTaskStatistic(tsk);
             ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);            
-            Ebean.save(wd);  
-            Ebean.update(wm);
             Ebean.save(timelogger);
+            //Ebean.save(wd);  
+           // Ebean.update(wm);
+            //Ebean.save(timelogger);
         }catch ( NoTaskIdException | InvalidTaskIdException | 
                 NotSeparatedTimesException | EmptyTimeFieldException | 
                 NotExpectedTimeOrderException ex) {
@@ -168,6 +176,7 @@ public class TLOG16RSResource {
             wm = createNewMonthOrGetTheExisting( 
                     Integer.parseInt(year), 
                     Integer.parseInt(month));
+            getUsersTimeLoggerFromDB();         // így nem változtat a timeloggeren...visszaállítja a DBből az állapotát
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
@@ -207,6 +216,7 @@ public class TLOG16RSResource {
                     Integer.parseInt(day),
                     reqMinDay, wm);
             System.out.println("Y/M/D...WD = :" + wd);
+            getUsersTimeLoggerFromDB();         // így nem változtat a timeloggeren...visszaállítja a DBből az állapotát
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
                 FutureWorkException ex) {
@@ -274,14 +284,13 @@ public class TLOG16RSResource {
     
     @PUT                                                                         
     @Path("/workmonths/workdays/tasks/modify")          /// EZT KELL MÉG
-    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response modifyTask(ModifyTaskRB taskRB) {
-        int reqMinDay = 0;
+        int reqMinDay = requiedDayMin;
         WorkMonth wm = null;       
         WorkDay wd = null;
-        Task tsk = null;
-        
+        Task tsk = null;        
         try {
             wm = createNewMonthOrGetTheExisting(
                     taskRB.getYear(), 
@@ -321,6 +330,9 @@ public class TLOG16RSResource {
             tsk.setComment(taskRB.getNewComment());
             tsk.setStartTime(taskRB.getNewStartTime());
             tsk.setEndTime(taskRB.getNewEndTime());
+            ServicesResource.updateTaskStatistic(tsk);
+            ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);   
+            Ebean.save(timelogger);
         } catch ( EmptyTimeFieldException | InvalidTaskIdException |  
                 NotExpectedTimeOrderException ex) {
             System.err.println(ex.getMessage());
@@ -332,28 +344,44 @@ public class TLOG16RSResource {
     @PUT                                                                         
     @Path("/workmonths/workdays/tasks/delete")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteTask( DeleteTaskRB deleteTask ){
+    public Response deleteTask( DeleteTaskRB deleteTask ) throws EmptyTimeFieldException{
       
       if( !ServicesResource.isTaskExits(timelogger, deleteTask) ){ 
           System.out.println("Delete TASK....task not exist.." + deleteTask);
-          return Response.status(Response.Status.SEE_OTHER).build();
+          throw new WebApplicationException
+                        (Response.status(Response.Status.BAD_REQUEST)
+                        .entity("The task " + deleteTask.getTaskId() +
+                        " does not exist").build());
           }
+      WorkMonth wm = getTheMonth(deleteTask.getYear(), deleteTask.getMonth());
+        System.out.println("Teh WM.." + wm);
       WorkDay wd = getTheWorkDay(
               deleteTask.getYear(), 
               deleteTask.getMonth(), 
               deleteTask.getDay());
       System.out.println("Delete TASK....task exist..Workday" + wd);
       Task tsk = getTheTask(wd, deleteTask.getTaskId(), deleteTask.getStartTime()); // OKÉÉ
+      if( tsk == null ) throw new WebApplicationException
+                        (Response.status(Response.Status.BAD_REQUEST)
+                        .entity("The task " + deleteTask.getTaskId() +
+                        " does not exist").build());
       System.out.println("Delete TASK....task to delete.." + tsk);
+        System.out.println("Before the task delete..." + wd.getTasks()  + " " + wd.getExtraMinPerDay());
+      Ebean.delete(tsk);
       wd.getTasks().remove(tsk);
-      return Response.ok().build();
+      Ebean.update(wm);
+      ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);
+      System.out.println("After the task delete..." + wd.getTasks()  + " " + wd.getExtraMinPerDay());
+      //ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);
+      Ebean.save(timelogger);
+      return Response.ok(tsk).build();
     }
     
     @DELETE                                                                        
     @Path("/workmonths/")
     public Response deleteAllTheWorkmonts(){
         Ebean.deleteAll( timelogger.getMonths() );
-        timelogger = Ebean.find(TimeLogger.class, 1);        
+        getUsersTimeLoggerFromDB();
         return Response.status(Response.Status.NO_CONTENT).build();
     }   
     
@@ -440,7 +468,8 @@ public class TLOG16RSResource {
         List<WorkMonth> monthSelected =  timelogger.getMonths().stream()
                 .filter(wm -> wm.getMonthDate().equals( yearMonth ))       
                 .collect(Collectors.toList());
-        return monthSelected.get(firstElement);
+        if( monthSelected.size() != 0 )return monthSelected.get(firstElement);
+        return null;
     }
     
     protected WorkDay getTheWorkDay( int year, int month, int day ){
@@ -459,7 +488,8 @@ public class TLOG16RSResource {
         List<Task> taskSelected = workDay.getTasks().stream().filter( tsk -> 
                 tsk.getTaskID().equals(taskId) && 
                 tsk.getStartTime().equals( LocalTime.parse(startTime) ) ).collect(Collectors.toList());
-        return taskSelected.get(firstElement);
+        if( taskSelected.size() != 0 ) return taskSelected.get(firstElement);
+        return null;
     }
           
 }

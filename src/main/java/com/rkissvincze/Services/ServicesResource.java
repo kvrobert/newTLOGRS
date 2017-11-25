@@ -31,13 +31,7 @@ public class ServicesResource {
     
     public static boolean isMonthExits( TimeLogger timelogger, int year, int month){
         
-        System.out.println("Enter the is month exists...");
-        System.out.println("The first MOnth..." + timelogger.getMonths().get(0));
-        System.out.println("The Second MOnth..." + timelogger.getMonths().get(1));
-        
-        System.out.println("The last MOnth...getDate" + timelogger.getMonths().get(timelogger.getMonths().size()-1).getDate());
-        System.out.println("The last MOnth...getMonthDate" + timelogger.getMonths().get(timelogger.getMonths().size()-1).getMonthDate());
-        System.out.println("The last YeraMont Parser...:" + YearMonth.parse(timelogger.getMonths().get(timelogger.getMonths().size()-1).getMonthDate()));
+        System.out.println("Enter the is month exists...");        
         return !timelogger.isNewMonth( WorkMonth.fromNumbers(year, month) );
     }
     
@@ -46,9 +40,6 @@ public class ServicesResource {
     }
     
     public static boolean isDayExits(TimeLogger timeLogger, int year, int month, int day){
-//        if( !isMonthExits(timeLogger, year, month) ) return false;
-//        WorkMonth workMonth = timeLogger.getMonths().stream().findFirst()
-//                .filter(wm -> wm.getDate().getMonthValue() == month ).get();
         
         if( !isMonthExits(timeLogger, year, month) ) return false;
         int firstElement = 0;

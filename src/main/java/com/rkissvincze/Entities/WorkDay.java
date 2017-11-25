@@ -82,8 +82,7 @@ public class WorkDay {
 
     public long getSumPerDay() throws EmptyTimeFieldException {
         
-       long summ = 0;
-       if( sumPerDay != 0 ) return sumPerDay;       
+       long summ = 0;  
        for( Task task : tasks )
        {
            summ += task.getMinPerTask();
@@ -93,8 +92,7 @@ public class WorkDay {
     }    
        
     public long getExtraMinPerDay() throws EmptyTimeFieldException{
-    
-        if( extraMinPerDay != 0 ) return extraMinPerDay;
+            
         extraMinPerDay = getSumPerDay() - getRequiredMinPerDay();
         return extraMinPerDay;
     }

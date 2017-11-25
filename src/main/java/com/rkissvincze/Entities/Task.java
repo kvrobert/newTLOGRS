@@ -52,13 +52,13 @@ public class Task {
         this.comment = comment;
         this.startTime = startTime;
         this.endTime = endtime; 
-        if( Util.isTimeNull(this) ) throw  new EmptyTimeFieldException(" time is null " + this.toString() );
+        if( Util.isTimeNull(this) ) throw  new EmptyTimeFieldException(" Timefield is empty, must fill out by " + this.toString() );
         if( !Util.isCorrectTimeOrder(this) ) throw new NotExpectedTimeOrderException(" The start time must be before the endtime ");
-        if( !this.isValidTaskId() ) throw new InvalidTaskIdException("Invalid task ID is of " + this.toString() + "task. It must be in 1234 or LT-1234 form");
+        if( !this.isValidTaskId() ) throw new InvalidTaskIdException("Invalid task-ID by " + this.toString() + "task. It must be in 1234 or LT-1234 form");
         if( this.getTaskID() == null || this.getTaskID().equals("") ) throw new NoTaskIdException();
         if( !Util.isMultipleQuarterHour(this) ) {
         
-            this.endTime =  Util.roundToMultipleQuarterHour(this.getStartTime(), this.getEndTime());
+        this.endTime =  Util.roundToMultipleQuarterHour(this.getStartTime(), this.getEndTime());
         }
     }
     
