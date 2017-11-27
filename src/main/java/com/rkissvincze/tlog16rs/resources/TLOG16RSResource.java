@@ -88,7 +88,6 @@ public class TLOG16RSResource {
             log.error(e.getMessage());
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build());
         }
-        //return Response.status(Response.Status.SEE_OTHER).build();
     }
     
     @POST
@@ -114,8 +113,9 @@ public class TLOG16RSResource {
                 FutureWorkException | EmptyTimeFieldException e){
             System.err.println(e.getMessage());
             log.error(e.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build());
         } 
-        return Response.status(Response.Status.SEE_OTHER).build();
+        
     }
         
     @POST
@@ -133,6 +133,7 @@ public class TLOG16RSResource {
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }        
         try {
             wd = createNewDayOrGetTheExisting( 
@@ -143,6 +144,7 @@ public class TLOG16RSResource {
                 FutureWorkException | EmptyTimeFieldException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         } 
         try {
             tsk = createNewTaskOrGetTheExisting(wd, task);
@@ -157,6 +159,7 @@ public class TLOG16RSResource {
                 NotExpectedTimeOrderException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }  
         return Response.ok(tsk, MediaType.APPLICATION_JSON).build();
     }
@@ -180,6 +183,7 @@ public class TLOG16RSResource {
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }        
         return Response.ok(wm.getDays(), MediaType.APPLICATION_JSON).build();
     }
@@ -207,6 +211,7 @@ public class TLOG16RSResource {
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }        
         try {
             wd = createNewDayOrGetTheExisting(
@@ -219,12 +224,11 @@ public class TLOG16RSResource {
             getUsersTimeLoggerFromDB();         // így nem változtat a timeloggeren...visszaállítja a DBből az állapotát
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
-                FutureWorkException ex) {
+                FutureWorkException | EmptyTimeFieldException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
-        } catch (EmptyTimeFieldException ex) {
-            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
+        } 
         return Response.ok(wd.getTasks(), MediaType.APPLICATION_JSON).build();
     }
     
@@ -245,6 +249,7 @@ public class TLOG16RSResource {
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }        
         try {
             wd = createNewDayOrGetTheExisting(                     
@@ -254,12 +259,11 @@ public class TLOG16RSResource {
                     reqMinDay, wm);
         }catch (NotNewDateException | WeekendNotEnabledException | 
                 NotTheSameMonthException | NegativeMinutesOfWorkException | 
-                FutureWorkException ex) {
+                FutureWorkException | EmptyTimeFieldException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
-        } catch (EmptyTimeFieldException ex) {        
-            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
+        } 
         try {
             tsk = createNewTaskOrGetTheExisting(wd, taskFinish);
         }catch ( NoTaskIdException | InvalidTaskIdException | 
@@ -267,6 +271,7 @@ public class TLOG16RSResource {
                 NotExpectedTimeOrderException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }
         try {
             tsk.setTaskID(taskFinish.getNewTaskId());
@@ -277,6 +282,7 @@ public class TLOG16RSResource {
                 NotExpectedTimeOrderException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }                 
         return Response.ok(tsk, MediaType.APPLICATION_JSON).build();
         
@@ -299,6 +305,7 @@ public class TLOG16RSResource {
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }        
         try {
             wd = createNewDayOrGetTheExisting(                     
@@ -312,8 +319,10 @@ public class TLOG16RSResource {
                 FutureWorkException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         } catch (EmptyTimeFieldException ex) {        
             Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }
         try {
             tsk = createNewTaskOrGetTheExisting(wd, taskRB);
@@ -323,6 +332,7 @@ public class TLOG16RSResource {
                 NotExpectedTimeOrderException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }
         
         try {
@@ -337,6 +347,7 @@ public class TLOG16RSResource {
                 NotExpectedTimeOrderException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }                 
         return Response.ok(tsk, MediaType.APPLICATION_JSON).build();
     }
