@@ -1,8 +1,19 @@
 version: '2'
 services:
-  web:
-    build: .
+  mariadb:
+    image: mariadb:5.5
+    container_name: mariadb
+    networks:
+    - tlog
+    volumes:
+    - "./database:/var/lib/mysql"
     ports:
-     - "5000:5000"
-  redis:
-    image: "redis:alpine"
+    - "9001:3306"
+    environment:
+    - MYSQL_DATABASE=timelogger
+    - MYSQL_USER=root
+    - MYSQL_PASSWORD=katika
+    - MYSQL_ROOT_PASSWORD=katika
+networks:
+  tlog:
+    driver: bridge

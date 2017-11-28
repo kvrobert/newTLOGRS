@@ -1,0 +1,8 @@
+sonarqube:
+    image: sonarqube
+    container_name: sonarqube
+    networks:
+    - tlog
+    ports:
+    - "9000:9000"
+    - "9092:9092"
