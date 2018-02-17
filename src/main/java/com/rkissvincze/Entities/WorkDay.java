@@ -39,6 +39,7 @@ public class WorkDay {
     
     
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Task> tasks = new ArrayList<>();
     
     private long requiredMinPerDay = (long) (7.5 * 60);

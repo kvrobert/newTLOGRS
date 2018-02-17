@@ -1,6 +1,5 @@
 package com.rkissvincze.Entities;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rkissvincze.Exceptions.NotNewDateException;
 import java.util.ArrayList;
 import java.util.List;

@@ -42,6 +42,7 @@ public class WorkMonth {
     
     
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<WorkDay> days = new ArrayList<>();    
     
     @JsonIgnore    
