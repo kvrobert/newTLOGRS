@@ -21,7 +21,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -43,25 +47,43 @@ public class ServicesResource {
         
         if( !isMonthExits(timeLogger, year, month) ) return false;
         int firstElement = 0;
-        String yearMonth = year + "-" + month;
+       // String yearMonth = year + "-" + month;
+        System.out.println("isDay existbol most a keresett nap adatai: " +year+month+day); 
+       String yearMonth = YearMonth.of(year, month).toString();
+        
         System.out.println("getTheMonth-ból.." + yearMonth );
         List<WorkMonth> monthSelected =  timeLogger.getMonths().stream()
                 .filter(wm -> wm.getMonthDate().equals( yearMonth )) 
                 .collect(Collectors.toList());
         WorkMonth workMonth =  monthSelected.get(firstElement); 
+        System.out.println("getTheMonth-ból..a MEGtalált WM" + workMonth );
+        System.out.println("a megtalált hónap eslő napjának adatai..:" + workMonth.getDays().get(0).getActualDay());
+        
+        List<WorkDay> wdays = workMonth.getDays().stream().filter( wd -> wd.getActualDay().getDayOfMonth() == day ).collect(Collectors.toList());
+        System.out.println("a Napok listájának mérete:" +wdays.size());
         
         return workMonth.getDays().stream().filter( 
                 wd -> wd.getActualDay().equals( 
                 LocalDate.of(year, month, day)) ).count() != 0;
     }
     
-    public static WorkDay createWorkDay( int requiredMin, int year, int month, int day )            
-            throws NegativeMinutesOfWorkException, FutureWorkException{
+    public static WorkDay createWorkDay( int requiredMin, int year, int month, int day ){
+        
         System.out.println("CREATE WORKDAY....in Service");
-        return WorkDay.fromNumbers( requiredMin, year, month, day);        
+        try {        
+            return WorkDay.fromNumbers( requiredMin, year, month, day);
+        } catch (NegativeMinutesOfWorkException | FutureWorkException ex) {
+            System.out.println(" HIBA A WD készítésnél.... ");
+            Logger.getLogger(ServicesResource.class.getName()).log(Level.SEVERE, null, ex);
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build()); 
+        } 
     }
     
     public static boolean isTaskExits( WorkDay workday, String taskId, String startTime){        
+        System.out.println("IsTask exist....WD-jjel...adatok..WD: "+ workday.toString() +"  tsk id:"+taskId +" startime: " +startTime);
+        
+        System.out.println("Parsolt LocalTIme: " + LocalTime.parse(startTime));
+        //System.out.println("1 db WD LocalTImeje: " + workday.getTasks().get(0).getStartTime());
         return workday.getTasks().stream().filter( task -> ( 
                 task.getTaskID().equals(taskId) && 
                 task.getStartTime().equals( LocalTime.parse(
@@ -69,14 +91,20 @@ public class ServicesResource {
     }
     
     public static boolean isTaskExits(TimeLogger timelogger, DeleteTaskRB deleteTask){
-        WorkMonth wm = timelogger.getMonths().stream().findFirst()
-                        .filter( wmonth -> wmonth.getDate()
-                        .getMonthValue() == deleteTask.getMonth() ).get();
+                
+        List<WorkMonth> wmonts = timelogger.getMonths().stream()
+                        .filter( wms -> YearMonth.parse( wms.getMonthDate() ).getMonthValue() == deleteTask.getMonth() &&
+                                YearMonth.parse( wms.getMonthDate() ).getYear() == deleteTask.getYear()  ).collect(Collectors.toList());
+        System.out.println("From isTask exixt...WM size = " + wmonts.size() +" és adaotok: " + wmonts.toString());
+        if ( wmonts.isEmpty() ){ System.out.println("WM Wmpty..."+wmonts.size() ); return false;}
+        WorkMonth wm = wmonts.get(0); // the first element 
         
-        WorkDay wd = wm.getDays().stream().findFirst()
+         List <WorkDay> workdays = wm.getDays().stream()
                 .filter( wday -> wday.getActualDay().getDayOfMonth() 
-                == deleteTask.getDay() ).get();
-        
+                == deleteTask.getDay() ).collect(Collectors.toList());
+        System.out.println("From isTask exixt...WD size = " + workdays.size() + "és adatok: "+ workdays.toString());
+        if( workdays.isEmpty() ) { System.out.println("WD Wmpty..."+workdays.size()); return false; } 
+        WorkDay wd = workdays.get(0); // the first element*/
         return isTaskExits(wd, deleteTask.getTaskId(), deleteTask.getStartTime());
     }
     
@@ -95,6 +123,14 @@ public class ServicesResource {
         workMonth.getRequiredMinPerMonth();
         workMonth.getExtraMinPerMonth();
     }
+    
+    public static void updateWorkMonthStatistic(WorkMonth workMonth) throws EmptyTimeFieldException {
+               
+        workMonth.getSumPerMonth();
+        workMonth.getRequiredMinPerMonth();
+        workMonth.getExtraMinPerMonth();
+    }
+    
     public static void updateTaskStatistic(Task task) throws EmptyTimeFieldException{
         task.getMinPerTask();
     }

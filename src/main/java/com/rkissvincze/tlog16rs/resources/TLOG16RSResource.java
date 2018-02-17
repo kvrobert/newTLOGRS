@@ -23,6 +23,7 @@ import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Services.ServicesResource;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +72,50 @@ public class TLOG16RSResource {
         return Response.ok( timelogger.getMonths(), 
                             MediaType.APPLICATION_JSON).build();        
     }
+    
+    
+    
+   @DELETE
+   @Path("/delworkmonth")
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   public Response delWorkMonth( WorkMonthRB workMonth  ){
+   
+    WorkMonth wm = null;
+    
+    wm = this.getTheMonth( workMonth.getYear(), workMonth.getMonth() );
+    getUsersTimeLoggerFromDB();
+    timelogger.getMonths().remove(wm);  
+    Ebean.delete(wm);
+    Ebean.save(timelogger);
+    return Response.ok( wm, MediaType.APPLICATION_JSON).build();
+   }
+   
+   
+   
+   
+   
+   
+   
+   @DELETE
+   @Path("/delworkDay")
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   public Response delWorkMonth( WorkDayRB workDay  ){
+    
+    WorkMonth wm = null;
+    WorkDay wd = null;
+    
+    
+    wm = this.getTheMonth( workDay.getYear(), workDay.getMonth() );
+    wd = this.getTheWorkDay(workDay.getYear(), workDay.getMonth(), workDay.getDay() );    
+    
+    getUsersTimeLoggerFromDB();
+    wm.getDays().remove(wd);    
+    Ebean.delete(wd);
+    Ebean.save(timelogger);
+    return Response.ok( wm, MediaType.APPLICATION_JSON).build();
+   }    
    
     @POST
     @Path("/workmonths")                                // HIBAKEZELÉS??????
@@ -170,11 +215,16 @@ public class TLOG16RSResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response displaysDays( @PathParam("year") String year, 
                                   @PathParam( "month" ) String month  ){
-        if( !year.matches("\\d{4}")  || !month.matches("\\d{2}") ) 
-            return Response.status(Response.Status.CONFLICT).build();
-
+         if( !year.matches("\\d{4}")  || !month.matches("\\d{1}||\\d{2}") ) 
+        {   System.out.println("Elbukott a regexp...");
+            throw new WebApplicationException
+                        (Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Something went wrong with the WorkDay: " + year + month +
+                        " maybr with pasrsing date").build());
+        }
+           
         WorkMonth wm = null; 
-        
+        System.out.println("Nem bukott el a regexp teszt..");
         try {
             wm = createNewMonthOrGetTheExisting( 
                     Integer.parseInt(year), 
@@ -198,8 +248,8 @@ public class TLOG16RSResource {
         int reqMinDay = 0;
         System.out.println("ENTERING..Y/M/D.." + year + month+day);
         if( !year.matches("\\d{4}")  || 
-            !month.matches("\\d{2}") || 
-            !day.matches("\\d{2}")) 
+            !month.matches("\\d{2}||\\d{1}") || 
+            !day.matches("\\d{2}||\\d{1}")) 
                 return Response.status(Response.Status.CONFLICT).build();
         WorkMonth wm = null;       
         WorkDay wd = null;
@@ -377,9 +427,14 @@ public class TLOG16RSResource {
                         .entity("The task " + deleteTask.getTaskId() +
                         " does not exist").build());
       System.out.println("Delete TASK....task to delete.." + tsk);
-        System.out.println("Before the task delete..." + wd.getTasks()  + " " + wd.getExtraMinPerDay());
+      System.out.println("Before the task delete..." + wd.getTasks()  + " " + wd.getExtraMinPerDay());
       Ebean.delete(tsk);
       wd.getTasks().remove(tsk);
+      if( wd.getTasks().isEmpty() ){ 
+        Ebean.delete(wd);
+        wm.getDays().remove( wd ); 
+      }
+        
       Ebean.update(wm);
       ServicesResource.updateWorkDayAndWorkMonthStatistic(wd, wm);
       System.out.println("After the task delete..." + wd.getTasks()  + " " + wd.getExtraMinPerDay());
@@ -463,23 +518,28 @@ public class TLOG16RSResource {
 
     protected WorkMonth createNewMonthOrGetTheExisting(int year, int month) throws NotNewDateException {
         WorkMonth wm;
+        System.out.println("Check the WorkMont...exist or not..");
         if( !ServicesResource.isMonthExits(timelogger,year, month )){
+            System.out.println("WorkMonth not exist..will be created..");
             wm = ServicesResource.createWorkMonth(year, month);
             timelogger.addMonth(wm);
         }else{
             wm = getTheMonth(year, month);
+            System.out.println("WorkMonth EXIST in Resource...." + wm.toString());
         }
         return wm;
     }
 
     protected WorkMonth getTheMonth(int year, int month) {
         int firstElement = 0;
-        String yearMonth = year + "-" + month;
-        System.out.println("getTheMonth-ból.." + yearMonth );
+        System.out.println("getTheMonth-ból.." + year+month );
+        timelogger.getMonths().forEach(wm ->  System.out.println("A hónapok a timeloggból: " + wm));
+        
         List<WorkMonth> monthSelected =  timelogger.getMonths().stream()
-                .filter(wm -> wm.getMonthDate().equals( yearMonth ))       
+                .filter(wm -> wm.getMonthDate().equals( YearMonth.of(year, month).toString() ))       
                 .collect(Collectors.toList());
         if( monthSelected.size() != 0 )return monthSelected.get(firstElement);
+        System.out.println("HIBAAAAAA, nem talált hónapot");
         return null;
     }
     
