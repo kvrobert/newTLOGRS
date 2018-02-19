@@ -75,7 +75,7 @@ public class TLOG16RSResource {
     
     
     
-   @DELETE
+   @PUT
    @Path("/delworkmonth")
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
@@ -97,7 +97,7 @@ public class TLOG16RSResource {
    
    
    
-   @DELETE
+   @PUT
    @Path("/delworkDay")
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)

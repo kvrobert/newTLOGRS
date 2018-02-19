@@ -57,7 +57,7 @@ public class ServicesResource {
                 .collect(Collectors.toList());
         WorkMonth workMonth =  monthSelected.get(firstElement); 
         System.out.println("getTheMonth-ból..a MEGtalált WM" + workMonth );
-        System.out.println("a megtalált hónap eslő napjának adatai..:" + workMonth.getDays().get(0).getActualDay());
+       // System.out.println("a megtalált hónap eslő napjának adatai..:" + workMonth.getDays().get(0).getActualDay());
         
         List<WorkDay> wdays = workMonth.getDays().stream().filter( wd -> wd.getActualDay().getDayOfMonth() == day ).collect(Collectors.toList());
         System.out.println("a Napok listájának mérete:" +wdays.size());
