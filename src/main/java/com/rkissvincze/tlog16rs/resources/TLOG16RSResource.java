@@ -21,6 +21,7 @@ import com.rkissvincze.Exceptions.NotSeparatedTimesException;
 import com.rkissvincze.Exceptions.NotTheSameMonthException;
 import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Services.ServicesResource;
+import com.rkissvincze.Services.UserService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -45,30 +47,48 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TLOG16RSResource {
     
-    TimeLogger timelogger;
+    TimeLogger timelogger = null;
     int requiedDayMin = 450;
-    String user;
+    String user = "";
     
     public TLOG16RSResource( TimeLogger timeLogger ){            
-        user = "Robesz";
-        getUsersTimeLoggerFromDB();  
-        if (timelogger == null){
-        this.timelogger = timeLogger;
-        Ebean.save(timelogger);
-        }
+       // user = "kvrobert@gmail.com";
+        
+    //    getUsersTimeLoggerFromDB( );  
+    //    if (timelogger == null){
+    //   this.timelogger = timeLogger;
+    //    Ebean.save(timelogger);
+    //    }
     }    
 
     private void getUsersTimeLoggerFromDB() {
         timelogger = Ebean.find(TimeLogger.class)
                 .where().eq("name", user)
                 .findUnique();
+        if( this.timelogger == null ) this.createNewUser();
+        
+    }
+    
+    private void resetUser(){
+        this.timelogger = null;
+        this.user = "";    
+    }
+    
+    private void createNewUser(){
+        
+        this.timelogger = new TimeLogger(user);
+        Ebean.save(timelogger);
     }
     
     @GET
     @Path("/workmonths")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response displaysWorkMoths(){
+    public Response displaysWorkMoths( @HeaderParam("Authorization") String accesToken ){
         log.info("Calling displaysWorkMoths() method");
+        System.out.println("Az érkezett token: " + accesToken);
+        
+        this.handleUserAuthentication( accesToken );
+                
         return Response.ok( timelogger.getMonths(), 
                             MediaType.APPLICATION_JSON).build();        
     }
@@ -561,6 +581,29 @@ public class TLOG16RSResource {
                 tsk.getStartTime().equals( LocalTime.parse(startTime) ) ).collect(Collectors.toList());
         if( taskSelected.size() != 0 ) return taskSelected.get(firstElement);
         return null;
+    }
+
+    private void handleUserAuthentication(String accesToken) {
+        
+        if( isValidAccesToken( accesToken ) ){        
+           this.getUsersTimeLoggerFromDB();    
+        }
+        else{
+            throw new WebApplicationException
+                        (Response.status(Response.Status.BAD_REQUEST)
+                        .entity( "Access denied! You don't have permission." ).build());
+        }
+    }
+
+    private boolean isValidAccesToken( String accesToken ) {
+        if( accesToken == null ){        
+            return false;
+        }
+        this.user = UserService.getUser(accesToken);
+        if( this.user != null && !this.user.equals("") ) { return true;}
+        else{
+            return false;
+        }
     }
           
 }

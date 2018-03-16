@@ -1,6 +1,7 @@
 package com.rkissvincze.tlog16rs;
 
 import com.rkissvincze.Entities.TimeLogger;
+import com.rkissvincze.Services.UserService;
 import com.rkissvincze.tlog16rs.resources.CreateDatabase;
 import com.rkissvincze.tlog16rs.resources.TLOG16RSResource;
 import com.rkissvincze.tlog16rs.resources.TLOG16RSResource_greeting;
@@ -28,9 +29,10 @@ public class TLOG16RSApplication extends Application<TLOG16RSConfiguration> {
     public void run(final TLOG16RSConfiguration configuration,
                     final Environment environment) {
         CreateDatabase createDatabase = new CreateDatabase( configuration  );
-        environment.jersey().register(new TLOG16RSResource( new TimeLogger("Robesz") ));
-        environment.jersey().register(new hello());
-        environment.jersey().register(new TLOG16RSResource_greeting());  
+        //environment.jersey().register(new TLOG16RSResource( new TimeLogger("Robesz") ));
+        environment.jersey().register(new TLOG16RSResource( new TimeLogger() )); // így most nem lesz default user
+       // environment.jersey().register(new hello());
+      //  environment.jersey().register(new TLOG16RSResource_greeting());  
     }
 
 }

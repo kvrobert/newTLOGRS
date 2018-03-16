@@ -1,0 +1,5 @@
+dbDriver: org.mariadb.jdbc.Driver
+dbUrl: jdbc:mariadb://den1.mysql6.gear.host/timelogger
+dbUsername: timelogger
+dbPassword: Kb41_s9EG-Sh
+dbName: timelogger
