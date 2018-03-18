@@ -7,6 +7,7 @@ package com.rkissvincze.Services;
 
 import com.rkissvincze.Beans.DeleteTaskRB;
 import com.rkissvincze.Beans.ModifyTaskRB;
+import com.rkissvincze.Beans.TaskRB;
 import com.rkissvincze.Entities.Task;
 import com.rkissvincze.Entities.TimeLogger;
 import com.rkissvincze.Entities.WorkDay;
@@ -136,6 +137,28 @@ public class ServicesResource {
     
     public static void updateTaskStatistic(Task task) throws EmptyTimeFieldException{
         task.getMinPerTask();
+    }
+    
+    
+    public static TaskRB taskTimeCorection( TaskRB task ) throws ParseException {
+        task.setStartTime( parseStringTime(task.getStartTime() ).toString() );
+        task.setEndTime( parseStringTime( task.getEndTime() ).toString() );
+        
+        return task;        
+    }
+    
+    public static DeleteTaskRB taskTimeCorection( DeleteTaskRB task ) throws ParseException {
+        task.setStartTime( parseStringTime(task.getStartTime() ).toString() );
+        return task;        
+    }
+    
+    public static ModifyTaskRB taskTimeCorection( ModifyTaskRB taskRB ) throws ParseException {
+        
+        taskRB.setStartTime( parseStringTime(taskRB.getStartTime()).toString() );
+        taskRB.setNewStartTime( parseStringTime(taskRB.getStartTime()).toString() );
+        taskRB.setNewEndTime( parseStringTime( taskRB.getNewEndTime() ).toString() );
+        
+        return taskRB;        
     }
     
     public static LocalTime parseStringTime(String time) throws ParseException {

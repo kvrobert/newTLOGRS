@@ -23,6 +23,7 @@ import com.rkissvincze.Exceptions.NotTheSameMonthException;
 import com.rkissvincze.Exceptions.WeekendNotEnabledException;
 import com.rkissvincze.Services.ServicesResource;
 import com.rkissvincze.Services.UserService;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -199,15 +200,20 @@ public class TLOG16RSResource {
         int reqMinDay = requiedDayMin;
         WorkMonth wm = null;       
         WorkDay wd = null;
-        Task tsk = null;        
+        Task tsk = null;
+        
         try {
+            task = ServicesResource.taskTimeCorection(task);
+            System.out.println("AZ UJ TIMEEEEE::::: " + task.getStartTime() + " - " + task.getEndTime());
             wm = createNewMonthOrGetTheExisting(
                     task.getYear(), task.getMonth());
         }catch (NotNewDateException ex) {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
-        }        
+        } catch (ParseException ex) {        
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
+        }
         try {
             wd = createNewDayOrGetTheExisting( 
                 task.getYear(), task.getMonth(), task.getDay(), reqMinDay, wm);
@@ -394,6 +400,7 @@ public class TLOG16RSResource {
         WorkDay wd = null;
         Task tsk = null;        
         try {
+            taskRB = ServicesResource.taskTimeCorection(taskRB);
             wm = createNewMonthOrGetTheExisting(
                     taskRB.getYear(), 
                     taskRB.getMonth());
@@ -402,7 +409,9 @@ public class TLOG16RSResource {
             System.err.println(ex.getMessage());
             log.error(ex.getMessage());
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
-        }        
+        } catch (ParseException ex) {        
+             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
+        }
         try {
             wd = createNewDayOrGetTheExisting(                     
                     taskRB.getYear(), 
@@ -421,7 +430,7 @@ public class TLOG16RSResource {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
         }
         try {
-            tsk = createNewTaskOrGetTheExisting(wd, taskRB);
+            tsk = createNewTaskOrGetTheExisting(wd, taskRB); 
              System.out.println("GetTheTASKinTaskModiy.." + tsk);
         }catch ( NoTaskIdException | InvalidTaskIdException | 
                 NotSeparatedTimesException | EmptyTimeFieldException | 
@@ -454,8 +463,15 @@ public class TLOG16RSResource {
     public Response deleteTask( DeleteTaskRB deleteTask, 
                                 @HeaderParam("Authorization") String accesToken   ) throws EmptyTimeFieldException{
         
-        System.out.println("Az érkezett token: " + accesToken);        
-        this.handleUserAuthentication( accesToken );
+      System.out.println("Az érkezett token: " + accesToken);        
+      this.handleUserAuthentication( accesToken );
+      
+        try {
+            deleteTask = ServicesResource.taskTimeCorection( deleteTask );
+        } catch (ParseException ex) {
+            Logger.getLogger(TLOG16RSResource.class.getName()).log(Level.SEVERE, null, ex);
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ex.getMessage()).build());
+        }
       
       if( !ServicesResource.isTaskExits(timelogger, deleteTask) ){ 
           System.out.println("Delete TASK....task not exist.." + deleteTask);
@@ -517,7 +533,7 @@ public class TLOG16RSResource {
         if( !ServicesResource.isTaskExits(
                 wd, 
                 taskRB.getTaskId(), 
-                taskRB.getStartTime())){
+                taskRB.getStartTime()  )){ // az időket próbálom formattálni
             
             tsk = ServicesResource.createTask(
                     taskRB.getNewTaskId(), 
@@ -526,7 +542,7 @@ public class TLOG16RSResource {
                     taskRB.getNewEndTime());
             wd.addTask(tsk);
         }else{
-            tsk = getTheTask(wd, taskRB.getTaskId(), taskRB.getStartTime());
+            tsk = getTheTask(wd, taskRB.getTaskId(), taskRB.getStartTime()); // az időket próbálom formattálni
         }
         return tsk;
     }
@@ -542,14 +558,14 @@ public class TLOG16RSResource {
             tsk = ServicesResource.createTask(
                     taskRB.getTaskId(), 
                     taskRB.getComment(), 
-                    taskRB.getStartTime(), 
-                    taskRB.getEndTime());
+                    taskRB.getStartTime(),      // az időket próbálom formattálni
+                    taskRB.getEndTime() );       // az időket próbálom formattálni
             wd.addTask(tsk);
         }else{
             tsk = getTheTask(
                     wd, 
                     taskRB.getTaskId(), 
-                    taskRB.getStartTime());
+                    taskRB.getStartTime());      // az időket próbálom formattálni
         }        
         return tsk;
     }
