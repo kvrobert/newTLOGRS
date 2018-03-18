@@ -12,6 +12,7 @@ import com.rkissvincze.Beans.WorkDayRB;
 import com.rkissvincze.Entities.WorkMonth;
 import com.rkissvincze.Exceptions.EmptyTimeFieldException;
 import com.rkissvincze.Exceptions.FutureWorkException;
+import com.rkissvincze.Exceptions.InvalidAccessTokenException;
 import com.rkissvincze.Exceptions.InvalidTaskIdException;
 import com.rkissvincze.Exceptions.NegativeMinutesOfWorkException;
 import com.rkissvincze.Exceptions.NoTaskIdException;
@@ -68,12 +69,7 @@ public class TLOG16RSResource {
         if( this.timelogger == null ) this.createNewUser();
         
     }
-    
-    private void resetUser(){
-        this.timelogger = null;
-        this.user = "";    
-    }
-    
+        
     private void createNewUser(){
         
         this.timelogger = new TimeLogger(user);
@@ -99,32 +95,32 @@ public class TLOG16RSResource {
    @Path("/delworkmonth")
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
-   public Response delWorkMonth( WorkMonthRB workMonth  ){
+   public Response delWorkMonth( WorkMonthRB workMonth, @HeaderParam("Authorization") String accesToken  ){
    
     WorkMonth wm = null;
     
+    System.out.println("Az érkezett token: " + accesToken);        
+    this.handleUserAuthentication( accesToken );
+    
     wm = this.getTheMonth( workMonth.getYear(), workMonth.getMonth() );
-    getUsersTimeLoggerFromDB();
+   // getUsersTimeLoggerFromDB();
     timelogger.getMonths().remove(wm);  
     Ebean.delete(wm);
     Ebean.save(timelogger);
     return Response.ok( wm, MediaType.APPLICATION_JSON).build();
-   }
-   
-   
-   
-   
-   
-   
+   }   
    
    @PUT
    @Path("/delworkDay")
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
-   public Response delWorkMonth( WorkDayRB workDay  ){
+   public Response delWorkMonth( WorkDayRB workDay, @HeaderParam("Authorization") String accesToken  ){
     
     WorkMonth wm = null;
     WorkDay wd = null;
+    
+    System.out.println("Az érkezett token: " + accesToken);        
+    this.handleUserAuthentication( accesToken );
     
     
     wm = this.getTheMonth( workDay.getYear(), workDay.getMonth() );
@@ -141,7 +137,11 @@ public class TLOG16RSResource {
     @Path("/workmonths")                                // HIBAKEZELÉS??????
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addWorkMonth(WorkMonthRB month){        
+    public Response addWorkMonth(WorkMonthRB month, @HeaderParam("Authorization") String accesToken ){ 
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
         WorkMonth workMonth = WorkMonth.fromNumbers(month.getYear(), 
                                                     month.getMonth());
         try{
@@ -159,9 +159,13 @@ public class TLOG16RSResource {
     @Path("/workmonths/workdays")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addworkDay( WorkDayRB workday ){
+    public Response addworkDay( WorkDayRB workday, @HeaderParam("Authorization") String accesToken ){
         WorkMonth wm = null;
         WorkDay wd = null;
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
         try{
             wm = createNewMonthOrGetTheExisting(workday.getYear(), 
                                                 workday.getMonth());            
@@ -187,7 +191,11 @@ public class TLOG16RSResource {
     @Path("/workmonths/workdays/tasks/start")       
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addTask( TaskRB task ){
+    public Response addTask( TaskRB task, @HeaderParam("Authorization") String accesToken  ){
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
         int reqMinDay = requiedDayMin;
         WorkMonth wm = null;       
         WorkDay wd = null;
@@ -234,7 +242,12 @@ public class TLOG16RSResource {
     @Consumes(MediaType.APPLICATION_JSON)       /// + tesztelések SOAP + old, form commandLineUI
     @Produces(MediaType.APPLICATION_JSON)
     public Response displaysDays( @PathParam("year") String year, 
-                                  @PathParam( "month" ) String month  ){
+                                  @PathParam( "month" ) String month,
+                                  @HeaderParam("Authorization") String accesToken  ){
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
          if( !year.matches("\\d{4}")  || !month.matches("\\d{1}||\\d{2}") ) 
         {   System.out.println("Elbukott a regexp...");
             throw new WebApplicationException
@@ -264,7 +277,12 @@ public class TLOG16RSResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response displaysTasks( @PathParam("year") String year,
                                    @PathParam( "month" ) String month, 
-                                   @PathParam( "day" ) String day  ){
+                                   @PathParam( "day" ) String day,
+                                   @HeaderParam("Authorization") String accesToken  ){
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
         int reqMinDay = 0;
         System.out.println("ENTERING..Y/M/D.." + year + month+day);
         if( !year.matches("\\d{4}")  || 
@@ -306,7 +324,11 @@ public class TLOG16RSResource {
     @Path("/workmonths/workdays/tasks/finish")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response finishTask(ModifyTaskRB taskFinish){
+    public Response finishTask(ModifyTaskRB taskFinish, @HeaderParam("Authorization") String accesToken  ){
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
         int reqMinDay = 0;
         WorkMonth wm = null;       
         WorkDay wd = null;
@@ -362,7 +384,11 @@ public class TLOG16RSResource {
     @Path("/workmonths/workdays/tasks/modify")          /// EZT KELL MÉG
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response modifyTask(ModifyTaskRB taskRB) {
+    public Response modifyTask(ModifyTaskRB taskRB, @HeaderParam("Authorization") String accesToken  ) {
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
         int reqMinDay = requiedDayMin;
         WorkMonth wm = null;       
         WorkDay wd = null;
@@ -425,7 +451,11 @@ public class TLOG16RSResource {
     @PUT                                                                         
     @Path("/workmonths/workdays/tasks/delete")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteTask( DeleteTaskRB deleteTask ) throws EmptyTimeFieldException{
+    public Response deleteTask( DeleteTaskRB deleteTask, 
+                                @HeaderParam("Authorization") String accesToken   ) throws EmptyTimeFieldException{
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
       
       if( !ServicesResource.isTaskExits(timelogger, deleteTask) ){ 
           System.out.println("Delete TASK....task not exist.." + deleteTask);
@@ -465,7 +495,11 @@ public class TLOG16RSResource {
     
     @DELETE                                                                        
     @Path("/workmonths/")
-    public Response deleteAllTheWorkmonts(){
+    public Response deleteAllTheWorkmonts( @HeaderParam("Authorization") String accesToken ){
+        
+        System.out.println("Az érkezett token: " + accesToken);        
+        this.handleUserAuthentication( accesToken );
+        
         Ebean.deleteAll( timelogger.getMonths() );
         getUsersTimeLoggerFromDB();
         return Response.status(Response.Status.NO_CONTENT).build();
@@ -599,7 +633,13 @@ public class TLOG16RSResource {
         if( accesToken == null ){        
             return false;
         }
-        this.user = UserService.getUser(accesToken);
+        try {
+            this.user = UserService.getUser(accesToken);
+        } catch (InvalidAccessTokenException ex) {
+            throw new WebApplicationException
+                        (Response.status(Response.Status.BAD_REQUEST)
+                        .entity( ex.getMessage() ).build());
+        }
         if( this.user != null && !this.user.equals("") ) { return true;}
         else{
             return false;

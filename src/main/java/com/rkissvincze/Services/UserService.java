@@ -2,6 +2,7 @@ package com.rkissvincze.Services;
 
 
 
+import com.rkissvincze.Exceptions.InvalidAccessTokenException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class UserService {
     final static String accessToken = "zd9N47prhCqFVXTezjjU_GthEZtKfShc";    
     
     
-    public static String getUser( String accessToken ){         
+    public static String getUser( String accessToken ) throws InvalidAccessTokenException{         
          
         StringBuffer response = new StringBuffer();
         UserInfo pojo= null;
@@ -45,6 +46,7 @@ public class UserService {
             System.out.println( "Serice.....A válasz... " + response.toString() );
         }catch (Exception ex) {
             System.out.println("Serice.....HIBA..." + ex.getMessage());
+            throw new InvalidAccessTokenException("Permission denied! Invalid Acces Token!");
         }
             System.out.println("==============================");
             ObjectMapper objMapper = new ObjectMapper();

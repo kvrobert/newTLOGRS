@@ -17,9 +17,12 @@ import com.rkissvincze.Exceptions.InvalidTaskIdException;
 import com.rkissvincze.Exceptions.NegativeMinutesOfWorkException;
 import com.rkissvincze.Exceptions.NoTaskIdException;
 import com.rkissvincze.Exceptions.NotExpectedTimeOrderException;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -133,6 +136,18 @@ public class ServicesResource {
     
     public static void updateTaskStatistic(Task task) throws EmptyTimeFieldException{
         task.getMinPerTask();
+    }
+    
+    public static LocalTime parseStringTime(String time) throws ParseException {
+        String[] formatStrings = {"HH:mm", "H:mm", "HHm", "HHmm", "Hmm"};
+        for (String formatString : formatStrings) {
+            try {
+                return LocalTime.parse(time, DateTimeFormatter.ofPattern(formatString));
+            } catch (DateTimeParseException e) {
+
+            }
+        }
+        throw new ParseException(time, 0);
     }
     
 //    public static Task modifyTask( ModifyTaskRB taskmodifyRB ) throws             Talán nem is kell ez
