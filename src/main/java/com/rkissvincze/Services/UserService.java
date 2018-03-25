@@ -33,8 +33,6 @@ public class UserService {
             HttpURLConnection con =  (HttpURLConnection) obj.openConnection();
             con.addRequestProperty("Authorization",  accessToken);
             int responseCode = con.getResponseCode();
-            System.out.println("Service...Sending GET rew to urel..: " + userInfoUrl);
-            System.out.println("Serice.....Rsponse code...: " + responseCode);
 
             BufferedReader in = new BufferedReader( new InputStreamReader( con.getInputStream() ) );
             String inputLine;
@@ -43,22 +41,26 @@ public class UserService {
                 response.append(inputLine);
             }
             in.close();
-            System.out.println( "Serice.....A válasz... " + response.toString() );
         }catch (Exception ex) {
-            System.out.println("Serice.....HIBA..." + ex.getMessage());
             throw new InvalidAccessTokenException("Permission denied! Invalid Acces Token!");
         }
-            System.out.println("==============================");
+            
             ObjectMapper objMapper = new ObjectMapper();
 
         try{   
             pojo = objMapper.readValue(response.toString(), UserInfo.class);
-            System.out.println("Serice.....Emailcím: " + pojo.email );             
-            System.out.println("Serice.....Email megerőstett?: " + pojo.emailVerified );
+            System.out.println("Az emailcm..: " + pojo.emailVerified);
+            System.out.println( pojo.emailVerified.equals("false") );            
          }catch (IOException ex) {
              System.out.println("Serice.....HIBA..." + ex.getMessage());
           }
         
-        return pojo.email;
+        if( pojo.emailVerified ){
+            return pojo.email;
+        }
+        else{
+            System.out.println("Érvénytelen email...."+pojo.emailVerified );
+            throw new InvalidAccessTokenException("Permission denied! Please verify your email address!");            
+        }
     }
 }
